@@ -46,9 +46,12 @@ class YeaWandbPlugin:
         parsed = ParseCTX(ctx)
         print("DEBUG config", parsed.config)
         print("DEBUG summary", parsed.summary)
-        runs = test_cfg.get("run")
-
         result = []
+        wandb_check = test_cfg.get("check-ext-wandb")
+        if not wandb_check:
+            return result
+        runs = wandb_check.get("run")
+
         if runs is not None:
             # only support one run right now
             assert len(runs) == 1
