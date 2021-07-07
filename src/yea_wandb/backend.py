@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 
-import argparse
-import glob
 import os
-import shutil
 import socket
 import subprocess
 import sys
 import time
 
 import requests
-
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
 

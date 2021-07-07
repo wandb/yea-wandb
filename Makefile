@@ -1,5 +1,7 @@
 release: dist ## package and upload release
 	twine upload dist/*
+	rm -fr build/
+	rm -fr dist/
 
 dist: clean ## builds source and wheel package
 	python setup.py sdist bdist_wheel

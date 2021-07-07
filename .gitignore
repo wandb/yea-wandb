@@ -1,2 +1,6 @@
 src/yea_wandb.egg-info/
 __pycache__
+build/
+dist/
+mypy-results/
+.tox/

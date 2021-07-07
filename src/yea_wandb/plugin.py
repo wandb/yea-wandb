@@ -1,9 +1,8 @@
 """wandb plugin for yea."""
 
 from yea_wandb import backend
-from yea_wandb import backend
-
 from yea_wandb.mock_server import ParseCTX  # noqa: E402
+
 
 # TODO: derive from YeaPlugin
 class YeaWandbPlugin:

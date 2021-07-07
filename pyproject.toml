@@ -1,0 +1,6 @@
+[tool.black]
+line-length = 88
+exclude = '''
+  src/yea_wandb/mock_requests.py
+| src/yea_wandb/mock_server.py
+'''

@@ -5,23 +5,23 @@ from setuptools import setup
 
 
 setup(
-    name='yea-wandb',
-    version='0.2.1',
+    name="yea-wandb",
+    version="0.2.2",
     description="Test harness wandb plugin",
-    packages=[
-        'yea_wandb'
-    ],
+    packages=["yea_wandb"],
     install_requires=[
-        'yea==0.2.1',
+        "Flask",
+        "requests",
+        "yea==0.2.2",
     ],
-    package_dir={'': 'src'},
+    package_dir={"": "src"},
     entry_points={
-        'yea.plugins': [
-            'yea_wandb = yea_wandb.plugin',
+        "yea.plugins": [
+            "yea_wandb = yea_wandb.plugin",
         ]
     },
     zip_safe=False,
     include_package_data=True,
     license="MIT license",
-    python_requires='>=3.5',
+    python_requires=">=3.5",
 )
