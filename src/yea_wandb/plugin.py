@@ -9,6 +9,7 @@ class YeaWandbPlugin:
     def __init__(self, yc):
         self._yc = yc
         self._backend = None
+        self._name = "wandb"
 
     def monitors_init(self):
         self._backend = backend.Backend(args=self._yc._args)
@@ -89,6 +90,10 @@ class YeaWandbPlugin:
 
     def test_done(self, t):
         pass
+
+    @property
+    def name(self):
+        return self._name
 
 
 def init_plugin(yc):
