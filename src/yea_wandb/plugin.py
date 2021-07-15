@@ -60,14 +60,34 @@ class YeaWandbPlugin:
             config = run.get("config")
             exit = run.get("exit")
             summary = run.get("summary")
+            ignore_extra_config_keys = run.get("ignore_extra_config_keys")
+            ignore_extra_summary_keys = run.get("ignore_extra_summary_keys")
             print("EXPECTED", exit, config, summary)
 
             ctx_config = parsed.config or {}
             ctx_config.pop("_wandb", None)
+
+            # if we are ignoring config keys that are present in the
+            # actual but not enumerated in the expected, we need to
+            # prune the actual down to just the keys that overlap
+            # with the expected
+            if ignore_extra_config_keys:
+                actual_config_keys = list(ctx_config.keys())
+                for key in actual_config_keys:
+                    if key not in config:
+                        del ctx_config[key]
+
             ctx_summary = parsed.summary or {}
             for k in list(ctx_summary):
                 if k.startswith("_"):
                     ctx_summary.pop(k)
+
+            if ignore_extra_summary_keys:
+                actual_summary_keys = list(ctx_summary.keys())
+                for key in actual_summary_keys:
+                    if key not in summary:
+                        del ctx_summary[key]
+
             print("ACTUAL", "unkn", ctx_config, ctx_summary)
 
             if exit is not None:
@@ -75,6 +95,7 @@ class YeaWandbPlugin:
                 ctx_exit = fs_list[-1].get("exitcode")
                 if exit != ctx_exit:
                     result.append("BAD_EXIT({}!={})".format(exit, ctx_exit))
+
             self._check_dict(result, "CONFIG", expected=config, actual=ctx_config)
             self._check_dict(result, "SUMMARY", expected=summary, actual=ctx_summary)
 
