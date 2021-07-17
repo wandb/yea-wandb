@@ -4,13 +4,10 @@ commands:
   save-tox-cache:
     description: "Save tox environment to cache"
     steps:
-      - unless:
-          condition: << pipeline.parameters.manual >>
-          steps:
-            - save_cache:
-                paths:
-                  - ./.tox
-                key: v0.1-toxenv-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
+      - save_cache:
+          paths:
+            - ./.tox
+          key: v0.1-toxenv-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "tox.ini" }}-{{ checksum "setup.py" }}
   restore-tox-cache:
     description: "Restore tox environment from cache"
     steps:
@@ -22,7 +19,6 @@ commands:
 
 workflows:
   main:
-    unless: << pipeline.parameters.manual >>
     jobs:
       - test:
          name: "code-check"
