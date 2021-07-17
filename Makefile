@@ -1,3 +1,6 @@
+test:
+	tox
+
 release: dist ## package and upload release
 	twine upload dist/*
 	rm -fr build/
