@@ -3,5 +3,8 @@ __pycache__
 build/
 dist/
 mypy-results/
+cover-results/
 .tox/
 .idea/
+.coverage
+coverage.xml

@@ -1,0 +1,14 @@
+[run]
+# branch = True
+source =
+    yea_wandb
+
+[paths]
+cononicalsrc =
+    src/yea_wandb
+    .tox/py37/lib/python3.7/site-packages/yea_wandb
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
