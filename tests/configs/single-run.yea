@@ -1,0 +1,17 @@
+id: 0.0.1       
+var:
+  - runs: :wandb:runs
+  - run: :runs[0]
+  - summary: :run[summary]           
+  - config: :run[config]
+  - exitcode: :run[exitcode]
+assert:
+  - :wandb:runs_len: 1
+  - :summary[s1]: 1
+  - :op:<=:
+    - :summary[s2]
+    - 2
+  - :config:
+      c1: 1
+      c2: 2
+  - :exitcode: 0
