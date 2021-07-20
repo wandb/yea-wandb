@@ -14,7 +14,7 @@ def parse_term(v, state, result=None):
         return v
     if not v.startswith(":"):
         return v
-    spl = v.split("[", 2)
+    spl = v.split("[", 1)
     var = spl[0]
     ind_list = []
     if len(spl) == 2:
@@ -124,8 +124,8 @@ class YeaWandbPlugin:
             return
         ctx = self._backend.get_state()
         parsed = ParseCTX(ctx)
-        print("DEBUG config", parsed.config)
-        print("DEBUG summary", parsed.summary)
+        # print("DEBUG config", parsed.config)
+        # print("DEBUG summary", parsed.summary)
         state = {}
         run = {}
         run["config"] = parsed.config
