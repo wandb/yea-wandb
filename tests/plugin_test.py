@@ -22,19 +22,6 @@ def check_state_fn():
     yield fn
 
 
-def test_this():
-    result =  []
-    yc = None
-    yp = plugin.YeaWandbPlugin(yc=yc)
-    exp = {"1": 1, "2": 2}
-    act = {"1": 1, "2": 22}
-    s = "something"
-    yp._check_dict(result=result, s=s, expected=exp, actual=act)
-    result = list(set(result))
-    print("GOT result", result)
-    assert len(result) == 1
-
-
 def test_single_run(check_state_fn):
     state = {}
     run1 = dict(config=dict(c1=1, c2=2), summary=dict(s1=1, s2=2), exitcode=0)

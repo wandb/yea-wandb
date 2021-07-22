@@ -50,7 +50,7 @@ ops = {
     "<": "__lt__",
     "<=": "__le__",
     ">": "__gt__",
-    ">=": "__gt__",
+    ">=": "__ge__",
     "==": "__eq__",
     "!=": "__ne__",
 }
@@ -106,48 +106,29 @@ class YeaWandbPlugin:
     def monitors_reset(self):
         self._backend.reset()
 
-    def _check_dict(self, result, s, expected, actual):
-        if expected is None:
-            return
-        for k, v in actual.items():
-            exp = expected.get(k)
-            if exp != v:
-                result.append("BAD_{}({}:{}!={})".format(s, k, exp, v))
-        for k, v in expected.items():
-            act = actual.get(k)
-            if v != act:
-                result.append("BAD_{}({}:{}!={})".format(s, k, v, act))
-
     def _get_backend_state(self):
         if not self._backend._server:
             # we are live
             return
-        ctx = self._backend.get_state()
-        parsed = ParseCTX(ctx)
-        # print("DEBUG config", parsed.config)
-        # print("DEBUG summary", parsed.summary)
+
         state = {}
-        run = {}
-        run["config"] = parsed.config
-        run["summary"] = parsed.summary
-
-        # TODO: move to ParseCTX
-        ctx_exitcode = None
-        fs_list = ctx.get("file_stream")
-        if fs_list:
-            ctx_exitcode = fs_list[-1].get("exitcode")
-            run["exitcode"] = ctx_exitcode
-
         runs = []
-        runs.append(run)
+
+        glob_ctx = self._backend.get_state()
+        glob_parsed = ParseCTX(glob_ctx)
+
+        run_ids = glob_parsed.runs
+        for run_id in run_ids:
+            parsed = ParseCTX(glob_ctx, run_id)
+            run = {}
+            run["config"] = parsed.config_user
+            run["summary"] = parsed.summary_user
+            run["exitcode"] = parsed.exit_code
+            runs.append(run)
+
         state[":wandb:runs"] = runs
         state[":wandb:runs_len"] = len(runs)
 
-        # TODO: remove this eventually
-        state["config"] = parsed.config
-        state["summary"] = parsed.summary
-        if ctx_exitcode is not None:
-            state["exitcode"] = ctx_exitcode
         return state
 
     def _check_vars(self, t, state):
@@ -183,56 +164,6 @@ class YeaWandbPlugin:
 
         result = []
         self._check_asserts(t, state, result)
-
-        wandb_check = test_cfg.get("check-ext-wandb")
-        if not wandb_check:
-            return result
-        runs = wandb_check.get("run")
-
-        if runs is not None:
-            # only support one run right now
-            assert len(runs) == 1
-            run = runs[0]
-            config = run.get("config")
-            exit = run.get("exit")
-            summary = run.get("summary")
-            ignore_extra_config_keys = run.get("ignore_extra_config_keys")
-            ignore_extra_summary_keys = run.get("ignore_extra_summary_keys")
-            print("EXPECTED", exit, config, summary)
-
-            ctx_config = state.get("config") or {}
-            ctx_config.pop("_wandb", None)
-
-            # if we are ignoring config keys that are present in the
-            # actual but not enumerated in the expected, we need to
-            # prune the actual down to just the keys that overlap
-            # with the expected
-            if ignore_extra_config_keys:
-                actual_config_keys = list(ctx_config.keys())
-                for key in actual_config_keys:
-                    if key not in config:
-                        del ctx_config[key]
-
-            ctx_summary = state.get("summary") or {}
-            for k in list(ctx_summary):
-                if k.startswith("_"):
-                    ctx_summary.pop(k)
-
-            if ignore_extra_summary_keys:
-                actual_summary_keys = list(ctx_summary.keys())
-                for key in actual_summary_keys:
-                    if key not in summary:
-                        del ctx_summary[key]
-
-            print("ACTUAL", "unkn", ctx_config, ctx_summary)
-
-            if exit is not None:
-                ctx_exit = state.get("exitcode")
-                if exit != ctx_exit:
-                    result.append("BAD_EXIT({}!={})".format(exit, ctx_exit))
-
-            self._check_dict(result, "CONFIG", expected=config, actual=ctx_config)
-            self._check_dict(result, "SUMMARY", expected=summary, actual=ctx_summary)
 
         result = list(set(result))
         return result
