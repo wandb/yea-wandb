@@ -4,6 +4,7 @@ build/
 dist/
 mypy-results/
 cover-results/
+.yea_cache/
 .tox/
 .idea/
 .coverage
