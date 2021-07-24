@@ -1,0 +1,21 @@
+id: 3-mp.0.2
+check-ext-wandb: {}
+var:
+  - run0:
+      :fn:find:
+      - item
+      - :wandb:runs
+      - :item[config][id]: 0
+  - run1:
+      :fn:find:
+      - item
+      - :wandb:runs
+      - :item[config][id]: 1
+assert:
+  - :wandb:runs_len: 2
+  - :run0[config]: {id: 0}
+  - :run0[summary]: {s: 0}
+  - :run0[exitcode]: 0
+  - :run1[config]: {id: 1}
+  - :run1[summary]: {s: 1}
+  - :run1[exitcode]: 0
