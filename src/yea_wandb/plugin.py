@@ -6,7 +6,40 @@ from yea_wandb import backend
 from yea_wandb.mock_server import ParseCTX  # noqa: E402
 
 
+def fn_find(args, state):
+    assert isinstance(args, list)
+    assert len(args) == 3
+    var, data, expr = args
+
+    pstate = state.copy()
+    err = []
+    d = parse_term(data, state=state, result=err)
+    assert not err
+    for item in d:
+        pstate[":" + var] = item
+        perr = []
+        b = parse_expr(expr, state=pstate, result=perr)
+        # if perr:
+        #   print("GOT: err=, err)
+        if b:
+            return item
+    return None
+
+
+FNSTR = ":fn:"
+FNS = {
+    "find": fn_find,
+}
+
+
 def parse_term(v, state, result=None):
+    # fn support: only handle single key dict that begins with :fn:
+    if isinstance(v, dict) and len(v) == 1:
+        k = next(iter(v))
+        if isinstance(k, str) and k.startswith(FNSTR):
+            fn = k[len(FNSTR) :]
+            fnfunc = FNS.get(fn)
+            return fnfunc(v[k], state=state)
     if not isinstance(v, str):
         return v
     if v.startswith("::"):
@@ -46,7 +79,7 @@ def parse_term(v, state, result=None):
 
 
 OPSTR = ":op:"
-ops = {
+OPS = {
     "<": "__lt__",
     "<=": "__le__",
     ">": "__gt__",
@@ -63,28 +96,29 @@ def parse_expr(adict, state, result):
     # might be an op
     if isinstance(k, str) and k.startswith(OPSTR) and isinstance(v, list):
         op = k[len(OPSTR) :]
-        opfunc = ops.get(op)
+        opfunc = OPS.get(op)
         if not opfunc:
             result.append("unknown op: {}".format(op))
-            return
+            return not result
         assert len(v) == 2, "ops need 2 parameters"
         v1 = parse_term(v[0], state, result)
         v2 = parse_term(v[1], state, result)
         f = getattr(v1, opfunc, None)
         if f is None:
             result.append("unimplemented op: {}".format(opfunc))
-            return
+            return not result
         if not f(v2):
             print("invalid", k, v1, op, v2)
             result.append("ASSERT {}: {} {} {}".format(k, v1, op, v2))
-        return
+        return not result
     # if not isinstance(v, (str, int, float)):
     #     print("WARNING: Not sure how to parse (might be ok)")
-    k = parse_term(k, state, result)
-    v = parse_term(v, state, result)
-    if k != v:
-        print("unequal", k, v)
-        result.append("{} != {}".format(k, v))
+    v1 = parse_term(k, state, result)
+    v2 = parse_term(v, state, result)
+    if v1 != v2:
+        # print("ERROR: Unequal", k, v1, v2)
+        result.append("ASSERT {}: {} != {}".format(k, v1, v2))
+    return not result
 
 
 # TODO: derive from YeaPlugin
@@ -117,7 +151,7 @@ class YeaWandbPlugin:
         glob_ctx = self._backend.get_state()
         glob_parsed = ParseCTX(glob_ctx)
 
-        run_ids = glob_parsed.runs
+        run_ids = glob_parsed.run_ids
         for run_id in run_ids:
             parsed = ParseCTX(glob_ctx, run_id)
             run = {}
@@ -143,7 +177,7 @@ class YeaWandbPlugin:
                 val = parse_term(v, state)
                 if val is not None:
                     state[":" + k] = val
-                    print("DEFINE :{}={}".format(k, val))
+                    # print("DEFINE :{}={}".format(k, val))
 
     def _check_asserts(self, t, state, result):
         test_cfg = t._test_cfg

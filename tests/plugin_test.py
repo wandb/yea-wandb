@@ -1,6 +1,7 @@
 
 import os
 import pytest
+import yaml
 
 from yea import ytest
 from yea import context
@@ -30,4 +31,17 @@ def test_single_run(check_state_fn):
     state[":wandb:runs"] = runs
     state[":wandb:runs_len"] = len(runs)
     results = check_state_fn("single-run", state)
+    assert not results
+
+
+def test_find_test(check_state_fn):
+    state = {}
+    run0 = dict(config=dict(id=0), summary=dict(s=0), exitcode=0)
+    run1 = dict(config=dict(id=1), summary=dict(s=1), exitcode=0)
+    runs = []
+    runs.append(run0)
+    runs.append(run1)
+    state[":wandb:runs"] = runs
+    state[":wandb:runs_len"] = len(runs)
+    results = check_state_fn("find-test", state)
     assert not results

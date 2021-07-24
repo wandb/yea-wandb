@@ -39,6 +39,7 @@ def default_ctx():
         "upsert_bucket_count": 0,
         "max_cli_version": "0.10.33",
         "runs": {},
+        "run_ids": [],
     }
 
 
@@ -537,6 +538,8 @@ def create_app(user_ctx=None):
             run_id = body["variables"].get("name", run_id_default)
             run_num = len(ctx["runs"])
             inserted = run_id not in ctx["runs"]
+            if inserted:
+                ctx["run_ids"].append(run_id)
             run_ctx = ctx["runs"].setdefault(run_id, default_ctx())
 
             r = run_ctx.setdefault("run", {})
@@ -1276,8 +1279,8 @@ class ParseCTX(object):
         return data
 
     @property
-    def runs(self):
-        return list(self._ctx.get("runs", {}))
+    def run_ids(self):
+        return self._ctx.get("run_ids", [])
 
     @property
     def dropped_chunks(self):

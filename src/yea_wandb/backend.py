@@ -75,10 +75,10 @@ class Backend:
                 if res.status_code == 200:
                     started = True
                     break
-                print("Attempting to connect but got: %s" % res)
+                print("INFO: Attempting to connect but got: %s" % res)
             except requests.exceptions.RequestException:
                 print(
-                    "Timed out waiting for server to start...",
+                    "INFO: Timed out waiting for server to start...",
                     server.base_url,
                     time.time(),
                 )
@@ -87,10 +87,10 @@ class Backend:
                 else:
                     raise ValueError("Server failed to start.")
         if started:
-            print("Mock server listing on {} see {}".format(server._port, logfname))
+            print("INFO: Mock server listing on {} see {}".format(server._port, logfname))
         else:
             server.terminate()
-            print("Server failed to launch, see {}".format(logfname))
+            print("ERROR: Server failed to launch, see {}".format(logfname))
             raise Exception("problem")
 
         os.environ["WANDB_BASE_URL"] = "http://127.0.0.1:{}".format(port)
