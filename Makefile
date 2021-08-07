@@ -1,10 +1,13 @@
 test:
 	tox
 
-release: dist ## package and upload release
+release-tox: dist ## package and upload release
 	twine upload dist/*
 	rm -fr build/
 	rm -fr dist/
+
+release:
+	tox -e release
 
 dist: clean ## builds source and wheel package
 	python setup.py sdist bdist_wheel
@@ -30,6 +33,5 @@ clean-pyc: ## remove Python file artifacts
 	find . -name '__pycache__' -exec rm -fr {} +
 
 clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
