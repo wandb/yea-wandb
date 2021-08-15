@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import os
+import random
 import socket
+import string
 import subprocess
 import sys
 import time
@@ -101,7 +103,10 @@ class Backend:
             return
         self._server.reset_ctx()
         tmp_ctx = self._server.get_ctx()
-        tmp_ctx["emulate_artifacts"] = True
+        letters = string.ascii_letters
+
+        emulate_str = "".join(random.choice(letters) for i in range(10))
+        tmp_ctx["emulate_artifacts"] = emulate_str
         self._server.set_ctx(tmp_ctx)
 
     def get_state(self):
