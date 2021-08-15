@@ -33,7 +33,7 @@ class Backend:
         # path = os.path.join(root, "tests", "utils", "mock_server.py")
         root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
         path = os.path.join(root, "mock_server.py")
-        command = [sys.executable, "-u", path]
+        command = [sys.executable, "-u", path, "--yea"]
         env = os.environ
         env["PORT"] = str(port)
         env["PYTHONPATH"] = root
@@ -100,6 +100,9 @@ class Backend:
         if not self._server:
             return
         self._server.reset_ctx()
+        tmp_ctx = self._server.get_ctx()
+        tmp_ctx["emulate_artifacts"] = True
+        self._server.set_ctx(tmp_ctx)
 
     def get_state(self):
         if not self._server:

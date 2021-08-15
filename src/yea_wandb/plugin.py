@@ -1,5 +1,6 @@
 """wandb plugin for yea."""
 
+import pprint
 import re
 
 from yea_wandb import backend
@@ -140,7 +141,7 @@ class YeaWandbPlugin:
     def monitors_reset(self):
         self._backend.reset()
 
-    def _get_backend_state(self):
+    def _get_backend_state(self, debug=False):
         if not self._backend._server:
             # we are live
             return
@@ -150,16 +151,23 @@ class YeaWandbPlugin:
 
         glob_ctx = self._backend.get_state()
         glob_parsed = ParseCTX(glob_ctx)
+        ddict = {"global": glob_parsed._debug()}
 
         run_ids = glob_parsed.run_ids
         for run_id in run_ids:
             parsed = ParseCTX(glob_ctx, run_id)
+            ddict.update({run_id: parsed._debug()})
             run = {}
             run["config"] = parsed.config_user
             run["summary"] = parsed.summary_user
             run["exitcode"] = parsed.exit_code
             runs.append(run)
 
+        if debug:
+            pp = pprint.PrettyPrinter(indent=2)
+            pp.pprint(ddict)
+
+        state[":wandb:artifacts"] = glob_parsed.artifacts
         state[":wandb:runs"] = runs
         state[":wandb:runs_len"] = len(runs)
 
@@ -202,8 +210,8 @@ class YeaWandbPlugin:
         result = list(set(result))
         return result
 
-    def test_check(self, t):
-        state = self._get_backend_state()
+    def test_check(self, t, debug=False):
+        state = self._get_backend_state(debug=debug)
         result_list = None
         if state:
             result_list = self._check_state(t, state)
