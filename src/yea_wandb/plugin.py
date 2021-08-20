@@ -27,9 +27,42 @@ def fn_find(args, state):
     return None
 
 
+def fn_len(args, state):
+    var = args
+    assert isinstance(var, str)
+    err = []
+    lst = parse_term(var, state=state, result=err)
+    assert not err
+    assert isinstance(lst, list)
+    return len(lst)
+
+
+def fn_keys(args, state):
+    var = args
+    assert isinstance(var, str)
+    err = []
+    dct = parse_term(var, state=state, result=err)
+    assert not err
+    assert isinstance(dct, dict)
+    return list(sorted(dct.keys()))
+
+
+def fn_sort(args, state):
+    var = args
+    assert isinstance(var, str)
+    err = []
+    lst = parse_term(var, state=state, result=err)
+    assert not err
+    assert isinstance(lst, list)
+    return list(sorted(lst))
+
+
 FNSTR = ":fn:"
 FNS = {
     "find": fn_find,
+    "len": fn_len,
+    "keys": fn_keys,
+    "sort": fn_sort,
 }
 
 
@@ -87,6 +120,8 @@ OPS = {
     ">=": "__ge__",
     "==": "__eq__",
     "!=": "__ne__",
+    "contains": "__contains__",
+    "not_contains": "__contains__",
 }
 
 
@@ -108,7 +143,11 @@ def parse_expr(adict, state, result):
         if f is None:
             result.append("unimplemented op: {}".format(opfunc))
             return not result
-        if not f(v2):
+        b = f(v2)
+        # hack to invert result for not_contains
+        if op.startswith("not_"):
+            b = not (b)
+        if not b:
             print("invalid", k, v1, op, v2)
             result.append("ASSERT {}: {} {} {}".format(k, v1, op, v2))
         return not result
@@ -159,17 +198,23 @@ class YeaWandbPlugin:
             ddict.update({run_id: parsed._debug()})
             run = {}
             run["config"] = parsed.config_user
+            run["config_wandb"] = parsed.config_wandb
             run["summary"] = parsed.summary_user
+            run["summary_wandb"] = parsed.summary_wandb
+            run["telemetry"] = parsed.telemetry
+            run["metrics"] = parsed.metrics
             run["exitcode"] = parsed.exit_code
             runs.append(run)
 
-        if debug:
-            pp = pprint.PrettyPrinter(indent=2)
-            pp.pprint(ddict)
-
         state[":wandb:artifacts"] = glob_parsed.artifacts
         state[":wandb:runs"] = runs
+        # deprecate this
         state[":wandb:runs_len"] = len(runs)
+
+        if debug:
+            pp = pprint.PrettyPrinter(indent=2)
+            # pp.pprint(ddict)
+            pp.pprint(state)
 
         return state
 
