@@ -1,5 +1,6 @@
 id: 3-mp.0.2
-check-ext-wandb: {}
+plugin:
+  - wandb
 var:
   - run0:
       :fn:find:

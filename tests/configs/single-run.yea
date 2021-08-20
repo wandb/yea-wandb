@@ -1,4 +1,6 @@
 id: 0.0.1       
+plugin:
+  - wandb
 var:
   - runs: :wandb:runs
   - run: :runs[0]
