@@ -499,7 +499,7 @@ def create_app(user_ctx=None):
                     }
                 }
             )
-        if "__type" in body["query"]:         
+        if "query Introspect" in body["query"]:
             return json.dumps(
                 {
                     "data": {
