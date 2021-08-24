@@ -499,7 +499,7 @@ def create_app(user_ctx=None):
                     }
                 }
             )
-        if "query Introspect" in body["query"]:
+        if '__type(name: "LocalVersionInfo"' in body["query"]:
             return json.dumps(
                 {
                     "data": {
