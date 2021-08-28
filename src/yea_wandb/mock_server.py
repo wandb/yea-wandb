@@ -499,16 +499,17 @@ def create_app(user_ctx=None):
                     }
                 }
             )
-        if '__type(name: "LocalVersionInfo"' in body["query"]:
+        if "query ProbeServerCapabilities" in body["query"]:
             return json.dumps(
-                {
+                  {
                     "data": {
-                        "__type": {
+                        "QueryType": {"fields": [{"name": "serverInfo"},]},
+                        "ServerInfoType": {
                             "fields": [
-                                {"name": "outOfDate"},
-                                {"name": "latestVersionString"},
+                                {"name": "cliVersionInfo"},
+                                {"name": "latestLocalVersionInfo"},
                             ]
-                        }
+                        },
                     }
                 }
             )
