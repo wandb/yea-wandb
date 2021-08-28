@@ -494,7 +494,11 @@ def create_app(user_ctx=None):
                                 "max_cli_version": str(
                                     ctx.get("max_cli_version", "0.10.33")
                                 )
-                            }
+                            },
+                            "latestLocalVersionInfo": {
+                                "outOfDate": ctx.get("out_of_date", False),
+                                "latestVersionString": str(ctx.get("latest_version", "0.9.42")),
+                            },
                         },
                     }
                 }
