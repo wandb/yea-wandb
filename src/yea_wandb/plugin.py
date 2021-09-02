@@ -204,6 +204,7 @@ class YeaWandbPlugin:
             run["telemetry"] = parsed.telemetry
             run["metrics"] = parsed.metrics
             run["exitcode"] = parsed.exit_code
+            run["files"] = parsed.files
             runs.append(run)
 
         state[":wandb:artifacts"] = glob_parsed.artifacts
