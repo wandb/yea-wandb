@@ -1,12 +1,13 @@
+import importlib
 import json
 import os
-
-import wandb
 
 import yea._setup as ysetup
 
 
 def setup_plugin():
+    wandb = importlib.load_module("wandb")
+
     yparams = ysetup._setup_params()
     names = os.environ.get("YEA_PLUGIN_WANDB_NAMES", "")
     values = os.environ.get("YEA_PLUGIN_WANDB_VALUES", "[]")

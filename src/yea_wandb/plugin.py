@@ -4,7 +4,6 @@ import pprint
 import re
 
 from yea_wandb import backend
-from yea_wandb.mock_server import ParseCTX  # noqa: E402
 
 
 def fn_find(args, state):
@@ -185,6 +184,8 @@ class YeaWandbPlugin:
             # we are live
             return
 
+        from yea_wandb.mock_server import ParseCTX  # noqa: E402
+
         state = {}
         runs = []
 
@@ -214,7 +215,7 @@ class YeaWandbPlugin:
 
         # TODO(): yea should actually have its own checks, for now do it here
         if ytest:
-            state["exit"] = ytest._retcode
+            state[":yea:exit"] = ytest._retcode
 
         if debug:
             pp = pprint.PrettyPrinter(indent=2)
