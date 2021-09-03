@@ -180,7 +180,7 @@ class YeaWandbPlugin:
     def monitors_reset(self):
         self._backend.reset()
 
-    def _get_backend_state(self, debug=False):
+    def _get_backend_state(self, debug=False, ytest=None):
         if not self._backend._server:
             # we are live
             return
@@ -211,6 +211,10 @@ class YeaWandbPlugin:
         state[":wandb:runs"] = runs
         # deprecate this
         state[":wandb:runs_len"] = len(runs)
+
+        # TODO(): yea should actually have its own checks, for now do it here
+        if ytest:
+            state["exit"] = ytest._retcode
 
         if debug:
             pp = pprint.PrettyPrinter(indent=2)
@@ -257,7 +261,7 @@ class YeaWandbPlugin:
         return result
 
     def test_check(self, t, debug=False):
-        state = self._get_backend_state(debug=debug)
+        state = self._get_backend_state(debug=debug, ytest=t)
         result_list = None
         if state:
             result_list = self._check_state(t, state)
