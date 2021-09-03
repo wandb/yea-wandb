@@ -6,7 +6,7 @@ import yea._setup as ysetup
 
 
 def setup_plugin():
-    wandb = importlib.load_module("wandb")
+    wandb = importlib.import_module("wandb")
 
     yparams = ysetup._setup_params()
     names = os.environ.get("YEA_PLUGIN_WANDB_NAMES", "")
