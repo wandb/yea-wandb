@@ -26,6 +26,21 @@ def fn_find(args, state):
     return None
 
 
+def fn_count_regex(args, state):
+    assert isinstance(args, list)
+    assert len(args) == 3
+    var, data, pattern = args
+    err = []
+    d = parse_term(data, state=state, result=err)
+    assert not err 
+
+    i = 0
+    for item in d:
+        if contains_regex([item], pattern):
+            i += 1
+    return i
+
+
 def fn_len(args, state):
     var = args
     assert isinstance(var, str)
@@ -62,6 +77,7 @@ FNS = {
     "len": fn_len,
     "keys": fn_keys,
     "sort": fn_sort,
+    "count_regex": fn_count_regex,
 }
 
 
@@ -111,6 +127,15 @@ def parse_term(v, state, result=None):
     return found
 
 
+def contains_regex(iterable, pattern):
+    '''
+    v1: Iterable[Str], i.e Dict[Str --> Any], List[Str], etc.
+    v2: Str
+    '''
+    for s in iterable:
+        if re.search(pattern, s):
+            return True
+
 OPSTR = ":op:"
 OPS = {
     "<": "__lt__",
@@ -122,6 +147,10 @@ OPS = {
     "contains": "__contains__",
     "not_contains": "__contains__",
 }
+OPS_FUNCS = {
+        "contains_regex": contains_regex,
+        "not_contains_regex": contains_regex,
+        }
 
 
 def parse_expr(adict, state, result):
@@ -131,18 +160,22 @@ def parse_expr(adict, state, result):
     # might be an op
     if isinstance(k, str) and k.startswith(OPSTR) and isinstance(v, list):
         op = k[len(OPSTR) :]
-        opfunc = OPS.get(op)
+        opfunc = OPS.get(op) or OPS_FUNCS.get(op)
         if not opfunc:
             result.append("unknown op: {}".format(op))
             return not result
         assert len(v) == 2, "ops need 2 parameters"
         v1 = parse_term(v[0], state, result)
         v2 = parse_term(v[1], state, result)
-        f = getattr(v1, opfunc, None)
-        if f is None:
-            result.append("unimplemented op: {}".format(opfunc))
-            return not result
-        b = f(v2)
+        if op in OPS_FUNCS:
+            f = OPS_FUNCS.get(op)
+            b = f(v1, v2)
+        else:
+            f = getattr(v1, opfunc, None)
+            if f is None:
+                result.append("unimplemented op: {}".format(opfunc))
+                return not result
+            b = f(v2)
         # hack to invert result for not_contains
         if op.startswith("not_"):
             b = not (b)
