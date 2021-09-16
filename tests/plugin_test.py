@@ -34,6 +34,31 @@ def test_single_run(check_state_fn):
     assert not results
 
 
+def test_contains_regex(check_state_fn):
+    state = {}
+    run0 = dict(config=dict(id=0), summary=dict(s=0), exitcode=0)
+    runs = []
+    runs.append(run0)
+    state[":wandb:runs"] = runs
+    state[":wandb:runs_len"] = len(runs)
+    state[":wandb:runs"][0]["files"] = dict(asdf=dict(size=10), xboom=dict(size=20))
+    results = check_state_fn("contains-regex-test", state)
+    assert not results
+
+
+def test_count_regex(check_state_fn):
+    state = {}
+    run0 = dict(config=dict(id=0), summary=dict(s=0), exitcode=0)
+    runs = []
+    runs.append(run0)
+    state[":wandb:runs"] = runs
+    state[":wandb:runs_len"] = len(runs)
+    state[":wandb:runs"][0]["files"] = dict(asdf=dict(size=10), xboom=dict(size=20), 
+            boomx=dict(size=40))
+    results = check_state_fn("count-regex-test", state)
+    assert not results
+
+
 def test_find_test(check_state_fn):
     state = {}
     run0 = dict(config=dict(id=0), summary=dict(s=0), exitcode=0)
