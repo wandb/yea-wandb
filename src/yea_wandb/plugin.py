@@ -32,7 +32,7 @@ def fn_count_regex(args, state):
     var, data, pattern = args
     err = []
     d = parse_term(data, state=state, result=err)
-    assert not err 
+    assert not err
 
     i = 0
     for item in d:
@@ -128,13 +128,14 @@ def parse_term(v, state, result=None):
 
 
 def contains_regex(iterable, pattern):
-    '''
+    """
     v1: Iterable[Str], i.e Dict[Str --> Any], List[Str], etc.
     v2: Str
-    '''
+    """
     for s in iterable:
         if re.search(pattern, s):
             return True
+
 
 OPSTR = ":op:"
 OPS = {
@@ -148,9 +149,9 @@ OPS = {
     "not_contains": "__contains__",
 }
 OPS_FUNCS = {
-        "contains_regex": contains_regex,
-        "not_contains_regex": contains_regex,
-        }
+    "contains_regex": contains_regex,
+    "not_contains_regex": contains_regex,
+}
 
 
 def parse_expr(adict, state, result):
