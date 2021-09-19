@@ -9,3 +9,4 @@ cover-results/
 .idea/
 .coverage
 coverage.xml
+.python-version

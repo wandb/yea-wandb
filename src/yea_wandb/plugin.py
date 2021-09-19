@@ -202,7 +202,7 @@ class YeaWandbPlugin:
         self._name = "wandb"
 
     def monitors_init(self):
-        self._backend = backend.Backend(args=self._yc._args)
+        self._backend = backend.Backend(yc=self._yc, args=self._yc._args)
 
     def monitors_start(self):
         self._backend.start()
@@ -240,6 +240,7 @@ class YeaWandbPlugin:
             run["metrics"] = parsed.metrics
             run["exitcode"] = parsed.exit_code
             run["files"] = parsed.files
+            run["output"] = parsed.output
             runs.append(run)
 
         state[":wandb:artifacts"] = glob_parsed.artifacts

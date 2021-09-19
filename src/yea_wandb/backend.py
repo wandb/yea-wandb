@@ -14,7 +14,8 @@ DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
 
 
 class Backend:
-    def __init__(self, args):
+    def __init__(self, yc, args):
+        self._yc = yc
         self._args = args
         self._server = None
 
@@ -41,7 +42,8 @@ class Backend:
         env["PYTHONPATH"] = root
         worker_id = 1
         logfname = os.path.join(
-            "/tmp",
+            self._yc._cfg._cfroot,
+            ".yea_cache",
             "standalone-live_mock_server-{}.log".format(worker_id),
         )
         logfile = open(logfname, "w")

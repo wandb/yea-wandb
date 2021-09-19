@@ -3,6 +3,7 @@
 from flask import Flask, request, g, jsonify
 import os
 import sys
+import re
 from datetime import datetime, timedelta
 import json
 import platform
@@ -69,6 +70,7 @@ def default_ctx():
         "emulate_artifacts": None,
         "run_state": "running",
         "run_queue_item_check_count": 0,
+        "return_jupyter_in_run_info": False,
     }
 
 
@@ -126,7 +128,10 @@ def run(ctx):
             "directUrl": base_url
             + "/storage?file=%s&direct=true" % ctx["requested_file"],
         }
-
+    if ctx["return_jupyter_in_run_info"]:
+        program_name = "one_cell.ipynb"
+    else:
+        program_name = "train.py"
     return {
         "id": "test",
         "name": "test",
@@ -160,7 +165,7 @@ def run(ctx):
         "createdAt": created_at,
         "updatedAt": datetime.now().isoformat(),
         "runInfo": {
-            "program": "train.py",
+            "program": program_name,
             "args": [],
             "os": platform.system(),
             "python": platform.python_version(),
@@ -760,6 +765,7 @@ def create_app(user_ctx=None):
                 return ART_EMU.create(variables=body["variables"])
 
             collection_name = body["variables"]["artifactCollectionNames"][0]
+            app.logger.info("Creating artifact {}".format(collection_name))
             ctx["artifacts"] = ctx.get("artifacts", {})
             ctx["artifacts"][collection_name] = ctx["artifacts"].get(
                 collection_name, []
@@ -1316,13 +1322,16 @@ def create_app(user_ctx=None):
             return {
                 "docker": "test/docker",
                 "program": "train.py",
+                "codePath": "train.py",
                 "args": ["--test", "foo"],
                 "git": ctx.get("git", {}),
             }
+        elif file == "requirements.txt":
+            return "numpy==1.19.5\n"
         elif file == "diff.patch":
             # TODO: make sure the patch is valid for windows as well,
             # and un skip the test in test_cli.py
-            return r"""
+            return """
 diff --git a/patch.txt b/patch.txt
 index 30d74d2..9a2c773 100644
 --- a/patch.txt
@@ -1501,6 +1510,17 @@ index 30d74d2..9a2c773 100644
     return app
 
 
+RE_DATETIME = re.compile("^(?P<date>\d+-\d+-\d+T\d+:\d+:\d+[.]\d+\s)(?P<rest>.*)$")
+
+
+def strip_datetime(s):
+    # 2021-09-18T17:28:07.059270
+    m = RE_DATETIME.match(s)
+    if m:
+        return m.group("rest")
+    return s
+
+
 class ParseCTX(object):
     def __init__(self, ctx, run_id=None):
         self._ctx = ctx["runs"][run_id] if run_id else ctx
@@ -1533,7 +1553,7 @@ class ParseCTX(object):
                 if not offset:
                     l = []
                 if k == u"output.log":
-                    lines = [content]
+                    lines = content
                 else:
                     lines = map(json.loads, content)
                 l.extend(lines)
@@ -1588,6 +1608,27 @@ class ParseCTX(object):
         return history
 
     @property
+    def output(self):
+        fs_files = self.get_filestream_file_items()
+        output_items = fs_files.get("output.log", [])
+        err_prefix = "ERROR "
+        stdout_items = []
+        stderr_items = []
+        for item in output_items:
+            if item.startswith(err_prefix):
+                err_item = item[len(err_prefix) :]
+                stderr_items.append(err_item)
+            else:
+                stdout_items.append(item)
+        stdout = "".join(stdout_items)
+        stderr = "".join(stderr_items)
+        stdout_lines = stdout.splitlines()
+        stderr_lines = stderr.splitlines()
+        stdout = list(map(strip_datetime, stdout_lines))
+        stderr = list(map(strip_datetime, stderr_lines))
+        return dict(stdout=stdout, stderr=stderr)
+
+    @property
     def exit_code(self):
         exit_code = None
         fs_list = self._ctx.get("file_stream")
@@ -1616,11 +1657,11 @@ class ParseCTX(object):
 
     @property
     def telemetry(self):
-        return self.config.get("_wandb", {}).get("value", {}).get("t")
+        return self.config.get("_wandb", {}).get("value", {}).get("t", {})
 
     @property
     def metrics(self):
-        return self.config.get("_wandb", {}).get("value", {}).get("m")
+        return self.config.get("_wandb", {}).get("value", {}).get("m", {})
 
     @property
     def manifests_created(self):
