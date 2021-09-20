@@ -254,6 +254,7 @@ class YeaWandbPlugin:
             run["exitcode"] = parsed.exit_code
             run["files"] = parsed.files
             run["output"] = parsed.output
+            run["git"] = parsed.git
             runs.append(run)
 
         state[":wandb:artifacts"] = glob_parsed.artifacts
