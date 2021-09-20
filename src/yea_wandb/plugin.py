@@ -71,6 +71,17 @@ def fn_sort(args, state):
     return list(sorted(lst))
 
 
+def fn_concat(args, state):
+    assert isinstance(args, list)
+    err = []
+    lst = []
+    for orig in args:
+        item = parse_term(orig, state=state, result=err)
+        lst.append(item)
+    assert not err
+    return "".join(lst)
+
+
 FNSTR = ":fn:"
 FNS = {
     "find": fn_find,
@@ -78,6 +89,7 @@ FNS = {
     "keys": fn_keys,
     "sort": fn_sort,
     "count_regex": fn_count_regex,
+    "concat": fn_concat,
 }
 
 
@@ -232,6 +244,7 @@ class YeaWandbPlugin:
             parsed = ParseCTX(glob_ctx, run_id)
             ddict.update({run_id: parsed._debug()})
             run = {}
+            run["run_id"] = parsed.run_id
             run["config"] = parsed.config_user
             run["config_wandb"] = parsed.config_wandb
             run["summary"] = parsed.summary_user
