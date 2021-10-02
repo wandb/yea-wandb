@@ -565,8 +565,9 @@ def create_app(user_ctx=None):
                         "outOfDate": ctx.get("out_of_date", False),
                         "latestVersionString": str(ctx.get("latest_version", "0.9.42")),
                     },
-                    "exposesExplicitRunQueueAckPath": True
-                }            }
+                    "exposesExplicitRunQueueAckPath": True,
+                }
+            }
 
             if ctx["empty_query"]:
                 server_info["serverInfo"].pop("latestLocalVersionInfo")
