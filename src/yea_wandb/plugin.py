@@ -255,6 +255,14 @@ class YeaWandbPlugin:
             run["files"] = parsed.files
             run["output"] = parsed.output
             run["git"] = parsed.git
+            run["alerts"] = parsed.alerts
+            run["tags"] = parsed.tags
+            run["notes"] = parsed.notes
+            run["group"] = parsed.group
+            run["job_type"] = parsed.job_type
+            run["name"] = parsed.name
+            run["program"] = parsed.program
+            run["host"] = parsed.host
             runs.append(run)
 
         state[":wandb:artifacts"] = glob_parsed.artifacts

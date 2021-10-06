@@ -73,6 +73,7 @@ def default_ctx():
         "run_state": "running",
         "run_queue_item_check_count": 0,
         "return_jupyter_in_run_info": False,
+        "alerts": [],
     }
 
 
@@ -711,6 +712,28 @@ def create_app(user_ctx=None):
                     c["git"]["remote"] = git_remote
                     c["git"]["commit"] = git_commit
 
+            tags = body["variables"].get("tags")
+            if tags is not None:
+                c["tags"] = tags
+            notes = body["variables"].get("notes")
+            if notes is not None:
+                c["notes"] = notes
+            group = body["variables"].get("groupName")
+            if group is not None:
+                c["group"] = group
+            job_type = body["variables"].get("jobType")
+            if job_type is not None:
+                c["job_type"] = job_type
+            name = body["variables"].get("displayName")
+            if name is not None:
+                c["name"] = name
+            program = body["variables"].get("program")
+            if program is not None:
+                c["program"] = program
+            host = body["variables"].get("host")
+            if host is not None:
+                c["host"] = host
+
             param_config = body["variables"].get("config")
             if param_config:
                 for c in ctx, run_ctx:
@@ -1124,6 +1147,23 @@ def create_app(user_ctx=None):
                 "data": {
                     "createTeam": {
                         "entity": {"id": "XXX", "name": body["variables"]["teamName"]}
+                    }
+                }
+            }
+        if "mutation NotifyScriptableRunAlert" in body["query"]:
+            avars = body.get("variables", {})
+            run_name = avars.get("runName", "unknown")
+            adict = dict(title=avars["title"], text=avars["text"], severity=avars["severity"])
+            atime = avars.get("waitDuration")
+            if atime is not None:
+                adict["wait"] = atime
+            run_ctx = ctx["runs"].setdefault(run_name, default_ctx())
+            for c in ctx, run_ctx:
+                c["alerts"].append(adict)
+            return {
+                "data": {
+                    "notifyScriptableRunAlert": {
+                        "success": True
                     }
                 }
             }
@@ -1774,6 +1814,38 @@ class ParseCTX(object):
     @property
     def artifacts(self):
         return self._ctx.get("artifacts_created") or {}
+
+    @property
+    def tags(self):
+        return self._ctx.get("tags") or []
+
+    @property
+    def notes(self):
+        return self._ctx.get("notes") or ""
+
+    @property
+    def group(self):
+        return self._ctx.get("group") or ""
+
+    @property
+    def job_type(self):
+        return self._ctx.get("job_type") or ""
+
+    @property
+    def name(self):
+        return self._ctx.get("name") or ""
+
+    @property
+    def program(self):
+        return self._ctx.get("program") or ""
+
+    @property
+    def host(self):
+        return self._ctx.get("host") or ""
+
+    @property
+    def alerts(self):
+        return self._ctx.get("alerts") or []
 
     def _debug(self):
         if not self._run_id:
