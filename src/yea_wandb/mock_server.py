@@ -779,6 +779,12 @@ def create_app(user_ctx=None):
                 host = body["variables"].get("host")
                 if host is not None:
                     c["host"] = host
+                entity_name = body["variables"].get("entity_name")
+                if entity_name is not None:
+                    c["entity_name"] = entity_name
+                project_name = body["variables"].get("project_name")
+                if project_name is not None:
+                    c["project_name"] = project_name
 
             param_config = body["variables"].get("config")
             if param_config:
