@@ -1733,6 +1733,14 @@ class ParseCTX(object):
         return self._ctx.get("run_ids", [])
 
     @property
+    def entity_name(self):
+        return self._ctx.get("entity_name", "")
+
+    @property
+    def project_name(self):
+        return self._ctx.get("project_name", "")
+
+    @property
     def file_names(self):
         return self._ctx.get("file_names", [])
 
