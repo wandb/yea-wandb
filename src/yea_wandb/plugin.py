@@ -82,6 +82,14 @@ def fn_concat(args, state):
     return "".join(lst)
 
 
+def fn_sum(args, state):
+    assert isinstance(args, str)  # name of array to sum over
+    err = []
+    lst = parse_term(args, state=state, result=err)
+    assert not err
+    return sum(lst)
+
+
 FNSTR = ":fn:"
 FNS = {
     "find": fn_find,
@@ -90,6 +98,7 @@ FNS = {
     "sort": fn_sort,
     "count_regex": fn_count_regex,
     "concat": fn_concat,
+    "sum": fn_sum,
 }
 
 

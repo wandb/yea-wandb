@@ -86,7 +86,6 @@ class ArtifactEmulator:
         return response
 
     def query(self, variables, query=None):
-        art_query = query or ""
         public_api_query_str = "query Artifact($id: ID!) {"
         art_id = variables.get("id")
         art_name = variables.get("name")
