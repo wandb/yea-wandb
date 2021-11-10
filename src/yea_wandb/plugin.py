@@ -272,9 +272,6 @@ class YeaWandbPlugin:
             run["name"] = parsed.name
             run["program"] = parsed.program
             run["host"] = parsed.host
-            run["entity_name"] = parsed.entity_name
-            run["project_name"] = parsed.project_name
-
             runs.append(run)
 
         state[":wandb:artifacts"] = glob_parsed.artifacts
