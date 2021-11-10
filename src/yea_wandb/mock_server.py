@@ -80,6 +80,7 @@ def default_ctx():
         "launch_agent_update_fail": False,
         "swappable_artifacts": False,
         "used_artifact_info": None,
+        "n_sweep_runs": 0,
     }
 
 
@@ -696,20 +697,31 @@ def create_app(user_ctx=None):
                 {"data": {"createAgent": {"agent": {"id": "mock-server-agent-93xy",}}}}
             )
         if "mutation Heartbeat(" in body["query"]:
+            new_run_needed = body["variables"]["runState"] == "{}"
+            if new_run_needed:
+                ctx["n_sweep_runs"] += 1
             return json.dumps(
                 {
                     "data": {
                         "agentHeartbeat": {
-                            "agent": {"id": "mock-server-agent-93xy",},
-                            "commands": json.dumps(
-                                [
-                                    {
-                                        "type": "run",
-                                        "run_id": "mocker-sweep-run-x9",
-                                        "args": {"learning_rate": {"value": 0.99124}},
-                                    }
-                                ]
-                            ),
+                            "agent": {
+                                "id": "mock-server-agent-93xy",
+                            },
+                            "commands": (
+                                json.dumps(
+                                    [
+                                        {
+                                            "type": "run",
+                                            "run_id": f"mocker-sweep-run-x9{ctx['n_sweep_runs']}",
+                                            "args": {"a": {"value": ctx["n_sweep_runs"]}},
+                                        }
+                                    ]
+                                )
+                                if ctx["n_sweep_runs"] <= 4
+                                else json.dumps([{"type": "exit"}])
+                            )
+                            if new_run_needed
+                            else "[]",
                         }
                     }
                 }
