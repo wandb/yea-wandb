@@ -1473,7 +1473,7 @@ def create_app(user_ctx=None):
                         }
                     },
                 }
-            elif _id == "6ddbe1c239de9c9fc6c397fc5591555a":
+            elif _id == "27c102831476c6ff7ce53c266c937612":
                 return {
                     "version": 1,
                     "storagePolicy": "wandb-storage-policy-v1",
@@ -1872,8 +1872,7 @@ class ParseCTX(object):
 
     @property
     def summary_wandb(self):
-        # TODO: move this to config_user eventually
-        return self.summary_raw["_wandb"]
+        return self.summary_raw.get("_wandb", {})
 
     @property
     def history(self):
