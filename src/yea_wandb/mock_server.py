@@ -70,7 +70,6 @@ def default_ctx():
         "run_ids": [],
         "file_names": [],
         "emulate_artifacts": None,
-        "item_acked": False,
         "run_state": "running",
         "run_queue_item_check_count": 0,
         "return_jupyter_in_run_info": False,
@@ -498,7 +497,8 @@ def create_app(user_ctx=None):
                     }
                 }
             )
-        if "query Run(" in body["query"]:
+        
+        if "query RunState(" in body["query"]:
             # if querying state of run, change context from running to finished
             if "RunFragment" not in body["query"] and "state" in body["query"]:
                 ret_val = json.dumps(
@@ -506,22 +506,23 @@ def create_app(user_ctx=None):
                 )
                 ctx["run_state"] = "finished"
                 return ret_val
-            return json.dumps({"data": {"project": {"run": run(ctx)}}})
-        if "query Model(" in body["query"]:
-            if "project(" in body["query"]:
-                project_field_name = "project"
-                run_field_name = "run"
-            else:
-                project_field_name = "model"
-                run_field_name = "bucket"
-            if "commit" in body["query"]:
-                run_config = _bucket_config(ctx)
-            else:
-                run_config = run(ctx)
-            return json.dumps(
-                {"data": {project_field_name: {run_field_name: run_config}}}
-            )
-        if "query Models(" in body["query"]:
+            return json.dumps({"data": {"project": {"run": run(ctx)}}})       
+        for query_name in ["RunConfigs", "RunResumeStatus", "RunStoppedStatus", "RunUploadUrls", "RunDownloadUrls", "RunDownloadUrl"]:    
+            if f"query {query_name}(" in body["query"]:
+                if "project(" in body["query"]:
+                    project_field_name = "project"
+                    run_field_name = "run"
+                else:
+                    project_field_name = "model"
+                    run_field_name = "bucket"
+                if "commit" in body["query"]:
+                    run_config = _bucket_config(ctx)
+                else:
+                    run_config = run(ctx)
+                return json.dumps(
+                    {"data": {project_field_name: {run_field_name: run_config}}}
+                )
+        if "query EntityProjects(" in body["query"]:
             return json.dumps(
                 {
                     "data": {
@@ -718,7 +719,6 @@ def create_app(user_ctx=None):
                                             "args": {
                                                 "a": {"value": ctx["n_sweep_runs"]}
                                             },
-                                            "runqueue_item_id": f"1jfskn2z",
                                         }
                                     ]
                                 )
@@ -817,8 +817,6 @@ def create_app(user_ctx=None):
                 response["data"]["upsertBucket"]["bucket"][
                     "sweepName"
                 ] = "test-sweep-id"
-            if body["variables"].get("runQueueItemId") == "1jfskn2z":
-                ctx["item_acked"] = True
             return json.dumps(response)
         if "mutation DeleteRun(" in body["query"]:
             return json.dumps({"data": {}})
@@ -1017,14 +1015,14 @@ def create_app(user_ctx=None):
                     }
                 }
             }
-        if "query RunArtifacts(" in body["query"]:
-            if "inputArtifacts" in body["query"]:
-                key = "inputArtifacts"
-            else:
-                key = "outputArtifacts"
+        if "query RunInputArtifacts(" in body["query"]:
             artifacts = paginated(artifact(ctx), ctx)
             artifacts["totalCount"] = ctx["page_times"]
-            return {"data": {"project": {"run": {key: artifacts}}}}
+            return {"data": {"project": {"run": {"inputArtifacts": artifacts}}}}
+        if "query RunOutputArtifacts(" in body["query"]:
+            artifacts = paginated(artifact(ctx), ctx)
+            artifacts["totalCount"] = ctx["page_times"]
+            return {"data": {"project": {"run": {"outputArtifacts": artifacts}}}}
         if "query Artifacts(" in body["query"]:
             version = "v%i" % ctx["page_count"]
             artifacts = paginated(artifact(ctx), ctx, {"version": version})
@@ -1088,7 +1086,7 @@ def create_app(user_ctx=None):
                 },
             }
             return {"data": {"project": {"artifact": art}}}
-        if "query Project" in body["query"] and "runQueues" in body["query"]:
+        if "query ProjectRunQueues(" in body["query"] and "runQueues" in body["query"]:
             if ctx["run_queues_return_default"]:
                 return json.dumps(
                     {
@@ -2003,10 +2001,6 @@ class ParseCTX(object):
         for k, v in items.items():
             d[k] = getattr(self, v)
         return d
-
-    @property
-    def item_acked(self):
-        return self._ctx.get("item_acked")
 
 
 if __name__ == "__main__":
