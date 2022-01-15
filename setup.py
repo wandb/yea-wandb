@@ -12,7 +12,7 @@ setup(
     install_requires=[
         "Flask",
         "requests",
-        "yea==0.7.9",
+        "yea==0.7.10",
     ],
     package_dir={"": "src"},
     entry_points={
@@ -23,5 +23,5 @@ setup(
     zip_safe=False,
     include_package_data=True,
     license="MIT license",
-    python_requires=">=3.5",
+    python_requires=">=3.6",
 )

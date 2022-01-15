@@ -2,6 +2,7 @@
 
 import pprint
 import re
+from typing import Any, Dict, Optional
 
 from yea_wandb import backend
 
@@ -227,6 +228,14 @@ class YeaWandbPlugin:
 
     def monitors_start(self):
         self._backend.start()
+
+    def monitors_configure(self, config: Optional[Dict[str, Any]]):
+        if config is None:
+            return
+        # optionally configure backend (update context)
+        ctx = config.get("mock_server")
+        if ctx is not None:
+            self._backend.update_ctx(ctx)
 
     def monitors_stop(self):
         self._backend.stop()

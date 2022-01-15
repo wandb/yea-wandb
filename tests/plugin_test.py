@@ -1,11 +1,10 @@
-
 import os
 import pytest
-import yaml
 
 from yea import ytest
 from yea import context
 from yea_wandb import plugin
+
 
 @pytest.fixture
 def check_state_fn():
