@@ -32,8 +32,6 @@ class Backend:
             return
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
         port = self._free_port()
-        # root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
-        # path = os.path.join(root, "tests", "utils", "mock_server.py")
         root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
         path = os.path.join(root, "mock_server.py")
         command = [sys.executable, "-u", path, "--yea"]
@@ -44,7 +42,7 @@ class Backend:
         logfname = os.path.join(
             self._yc._cfg._cfroot,
             ".yea_cache",
-            "standalone-live_mock_server-{}.log".format(worker_id),
+            f"standalone-live_mock_server-{worker_id}.log",
         )
         logfile = open(logfname, "w")
         server = subprocess.Popen(
@@ -70,12 +68,12 @@ class Backend:
         server.reset_ctx = reset_ctx
 
         server._port = port
-        server.base_url = "http://localhost:%i" % server._port
+        server.base_url = f"http://localhost:{server._port}"
         self._server = server
         started = False
         for _ in range(30):
             try:
-                res = requests.get("%s/ctx" % server.base_url, timeout=5)
+                res = requests.get(f"{server.base_url}/ctx", timeout=5)
                 if res.status_code == 200:
                     started = True
                     break
@@ -97,8 +95,15 @@ class Backend:
             print("ERROR: Server failed to launch, see {}".format(logfname))
             raise Exception("problem")
 
-        os.environ["WANDB_BASE_URL"] = "http://127.0.0.1:{}".format(port)
+        os.environ["WANDB_BASE_URL"] = f"http://127.0.0.1:{port}"
         os.environ["WANDB_API_KEY"] = DUMMY_API_KEY
+
+    # update the mock server context with the new values
+    def update_ctx(self, ctx):
+        if self._server is None:
+            return
+        print("INFO: Updating mock server context with: ", ctx)
+        self._server.set_ctx(ctx)
 
     def reset(self):
         if not self._server:
