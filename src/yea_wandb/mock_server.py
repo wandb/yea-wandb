@@ -70,7 +70,6 @@ def default_ctx():
         "run_ids": [],
         "file_names": [],
         "emulate_artifacts": None,
-        "item_acked": False,
         "run_state": "running",
         "run_queue_item_check_count": 0,
         "return_jupyter_in_run_info": False,
@@ -723,7 +722,6 @@ def create_app(user_ctx=None):
                                             "args": {
                                                 "a": {"value": ctx["n_sweep_runs"]}
                                             },
-                                            "runqueue_item_id": f"1jfskn2z",
                                         }
                                     ]
                                 )
@@ -822,8 +820,6 @@ def create_app(user_ctx=None):
                 response["data"]["upsertBucket"]["bucket"][
                     "sweepName"
                 ] = "test-sweep-id"
-            if body["variables"].get("runQueueItemId") == "1jfskn2z":
-                ctx["item_acked"] = True
             return json.dumps(response)
         if "mutation DeleteRun(" in body["query"]:
             return json.dumps({"data": {}})
@@ -2008,10 +2004,6 @@ class ParseCTX(object):
         for k, v in items.items():
             d[k] = getattr(self, v)
         return d
-
-    @property
-    def item_acked(self):
-        return self._ctx.get("item_acked")
 
 
 if __name__ == "__main__":
