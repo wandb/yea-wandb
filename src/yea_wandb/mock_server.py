@@ -1,9 +1,5 @@
 """Mock Server for simple calls the cli and public api make"""
 
-import threading
-from six.moves import urllib
-import logging
-import wandb
 from flask import Flask, request, g, jsonify
 import os
 import sys
@@ -16,8 +12,12 @@ import six
 
 # HACK: restore first two entries of sys path after wandb load
 save_path = sys.path[:2]
+import wandb
 
 sys.path[0:0] = save_path
+import logging
+from six.moves import urllib
+import threading
 
 RequestsMock = None
 InjectRequestsParse = None
@@ -164,7 +164,7 @@ def run(ctx):
         "events": ['{"cpu": 10}', '{"cpu": 20}', '{"cpu": 30}'],
         "files": {
             # Special weights url by default, if requesting upload we set the name
-            "edges": [{"node": fileNode, }]
+            "edges": [{"node": fileNode,}]
         },
         "sampledHistory": [[{"loss": 0, "acc": 100}, {"loss": 1, "acc": 0}]],
         "shouldStop": False,
@@ -219,7 +219,7 @@ def artifact(
                 "alias": "v%i" % ctx["page_count"],
             }
         ],
-        "artifactSequence": {"name": collection_name, },
+        "artifactSequence": {"name": collection_name,},
         "artifactType": {"name": "dataset"},
         "currentManifest": {
             "file": {
@@ -609,7 +609,7 @@ def create_app(user_ctx=None):
                 return json.dumps(
                     {
                         "data": {
-                            "QueryType": {"fields": [{"name": "serverInfo"}, ]},
+                            "QueryType": {"fields": [{"name": "serverInfo"},]},
                             "ServerInfoType": {
                                 "fields": [
                                     {"name": "cliVersionInfo"},
@@ -623,7 +623,7 @@ def create_app(user_ctx=None):
             return json.dumps(
                 {
                     "data": {
-                        "QueryType": {"fields": [{"name": "serverInfo"}, ]},
+                        "QueryType": {"fields": [{"name": "serverInfo"},]},
                         "ServerInfoType": {
                             "fields": [
                                 {"name": "cliVersionInfo"},
@@ -712,7 +712,7 @@ def create_app(user_ctx=None):
             )
         if "mutation CreateAgent(" in body["query"]:
             return json.dumps(
-                {"data": {"createAgent": {"agent": {"id": "mock-server-agent-93xy", }}}}
+                {"data": {"createAgent": {"agent": {"id": "mock-server-agent-93xy",}}}}
             )
         if "mutation Heartbeat(" in body["query"]:
             new_run_needed = body["variables"]["runState"] == "{}"
@@ -722,7 +722,7 @@ def create_app(user_ctx=None):
                 {
                     "data": {
                         "agentHeartbeat": {
-                            "agent": {"id": "mock-server-agent-93xy", },
+                            "agent": {"id": "mock-server-agent-93xy",},
                             "commands": (
                                 json.dumps(
                                     [
@@ -894,7 +894,7 @@ def create_app(user_ctx=None):
             art = artifact(ctx, id_override=id)
             if len(art.get("aliases", [])) and not delete_aliases:
                 raise Exception("delete_aliases not set, but artifact has aliases")
-            return {"data": {"deleteArtifact": {"artifact": art, "success": True, }}}
+            return {"data": {"deleteArtifact": {"artifact": art, "success": True,}}}
         if "mutation CreateArtifactManifest(" in body["query"]:
             manifest = {
                 "id": 1,
@@ -915,7 +915,7 @@ def create_app(user_ctx=None):
             run_ctx = ctx["runs"].setdefault(run_name, default_ctx())
             for c in ctx, run_ctx:
                 c["manifests_created"].append(manifest)
-            return {"data": {"createArtifactManifest": {"artifactManifest": manifest, }}}
+            return {"data": {"createArtifactManifest": {"artifactManifest": manifest,}}}
         if "mutation UpdateArtifactManifest(" in body["query"]:
             manifest = {
                 "id": 1,
@@ -932,7 +932,7 @@ def create_app(user_ctx=None):
                     "uploadHeaders": "",
                 },
             }
-            return {"data": {"updateArtifactManifest": {"artifactManifest": manifest, }}}
+            return {"data": {"updateArtifactManifest": {"artifactManifest": manifest,}}}
         if "mutation CreateArtifactFiles" in body["query"]:
             if ART_EMU:
                 return ART_EMU.create_files(variables=body["variables"])
