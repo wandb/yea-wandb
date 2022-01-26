@@ -1,8 +1,7 @@
-name: are-mocks-synced
+name: check if mocks are synced
 
 on:
   push:
-    branches: [ master ]
   pull_request:
 
 jobs:
