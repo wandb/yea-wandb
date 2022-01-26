@@ -92,8 +92,10 @@ class ArtifactEmulator:
         art_name = variables.get("name")
         assert art_id or art_name
 
-        is_public_api_query = query and (query.startswith(public_api_query_str)
-                                         or query.startswith(public_api_query_str2))
+        is_public_api_query = query and (
+            query.startswith(public_api_query_str)
+            or query.startswith(public_api_query_str2)
+        )
 
         if art_name:
             collection_name, version = art_name.split(":", 1)
