@@ -1,0 +1,34 @@
+name: are-mocks-synced
+
+defaults:
+  run:
+    # run shell in interactive mode
+    shell: bash -ieo pipefail {0}
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  are-mocks-synced:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check if mock_requests is up to date with wandb/client:master
+        id: mock_requests
+        run: |
+          wget https://raw.githubusercontent.com/wandb/client/master/tests/utils/mock_requests.py
+          diff mock_requests.py src/yea_wandb/mock_requests.py
+        continue-on-error: true
+      - name: Check if mock_server is up to date with wandb/client:master
+        id: mock_server
+        run: |
+          wget https://raw.githubusercontent.com/wandb/client/master/tests/utils/mock_server.py
+          diff mock_server.py src/yea_wandb/mock_server.py
+        continue-on-error: true
+      - name: Check on failures
+        if: steps.mock_requests.outcome != 'success' || steps.mock_server.outcome != 'success'
+        run: exit 1

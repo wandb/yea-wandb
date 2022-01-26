@@ -10,6 +10,8 @@ import platform
 import yaml
 import six
 
+TEST_GA = None
+
 # HACK: restore first two entries of sys path after wandb load
 save_path = sys.path[:2]
 import wandb
