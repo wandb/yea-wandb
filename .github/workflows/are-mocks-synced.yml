@@ -24,6 +24,15 @@ jobs:
           wget https://raw.githubusercontent.com/wandb/client/master/tests/utils/mock_server.py
           diff mock_server.py src/yea_wandb/mock_server.py
         continue-on-error: true
+      - name: Check if artifact_emu is up to date with wandb/client:master
+        id: artifact_emu
+        run: |
+          wget https://raw.githubusercontent.com/wandb/client/master/tests/utils/artifact_emu.py
+          diff artifact_emu.py src/yea_wandb/artifact_emu.py
+        continue-on-error: true
       - name: Check on failures
-        if: steps.mock_requests.outcome != 'success' || steps.mock_server.outcome != 'success'
+        if: |
+          steps.mock_requests.outcome != 'success'
+          || steps.mock_server.outcome != 'success'
+          || steps.artifact_emu.outcome != 'success'
         run: exit 1
