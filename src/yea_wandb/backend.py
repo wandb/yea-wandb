@@ -97,6 +97,7 @@ class Backend:
 
         os.environ["WANDB_BASE_URL"] = f"http://127.0.0.1:{port}"
         os.environ["WANDB_API_KEY"] = DUMMY_API_KEY
+        os.environ["WANDB_SENTRY_DSN"] = f"http://fakeuser@127.0.0.1:{port}/5288891"
 
     # update the mock server context with the new values
     def update_ctx(self, ctx):
