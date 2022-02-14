@@ -37,9 +37,9 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 bumpversion-to-dev:
-	pip install -qq bumpversion==0.5.3
+	pip install -qq bump2version==1.0.1
 	python ./tools/bumpversion-tool.py --to-dev
 
 bumpversion-from-dev:
-	pip install -qq bumpversion==0.5.3
+	pip install -qq bump2version==1.0.1
 	python ./tools/bumpversion-tool.py --from-dev

@@ -4,7 +4,7 @@ import argparse
 import configparser
 import sys
 
-import bumpversion
+from bumpversion.cli import main as bumpversion_main
 
 
 parser = argparse.ArgumentParser()
@@ -37,27 +37,27 @@ def bump_release_to_dev(current_version):
     if args.debug:
         bump_args += ["--allow-dirty", "--dry-run", "--verbose"]
     bump_args += ["--new-version", new_version, "dev"]
-    bumpversion.main(bump_args)
+    bumpversion_main(bump_args)
 
 
 def bump_release_from_dev(current_version):
     # Assume this is a dev version
-    parts = current_version.split(".")
-    if len(parts) != 4:
+    parts = current_version.split("-")
+    if len(parts) != 2:
         version_problem(current_version)
-    major, minor, patch, _ = parts
+    major, minor, patch = parts[0].split(".")
 
     new_version = f"{major}.{minor}.{patch}"
     bump_args = []
     if args.debug:
         bump_args += ["--allow-dirty", "--dry-run", "--verbose"]
     bump_args += ["--new-version", new_version, "patch"]
-    bumpversion.main(bump_args)
+    bumpversion_main(bump_args)
 
 
 def main():
     config = configparser.ConfigParser()
-    config.read("setup.cfg")
+    config.read(".bumpversion.cfg")
     current_version = config["bumpversion"]["current_version"]
 
     if args.to_dev:
