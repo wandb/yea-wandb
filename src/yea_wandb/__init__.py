@@ -2,4 +2,4 @@ from .setup import setup
 
 
 __all__ = ["setup"]
-__version__ = "0.7.35"
+__version__ = "0.7.34"
