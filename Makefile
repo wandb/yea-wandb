@@ -35,3 +35,11 @@ clean-pyc: ## remove Python file artifacts
 clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
+
+bumpversion-to-dev:
+	pip install -qq bump2version==1.0.1
+	python ./tools/bumpversion-tool.py --to-dev
+
+bumpversion-from-dev:
+	pip install -qq bump2version==1.0.1
+	python ./tools/bumpversion-tool.py --from-dev
