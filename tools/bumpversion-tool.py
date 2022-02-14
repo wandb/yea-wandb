@@ -32,7 +32,7 @@ def bump_release_to_dev(current_version):
     except ValueError:
         version_problem(current_version)
 
-    new_version = f"{major}.{minor}.{patch_num + 1}.dev1"
+    new_version = f"{major}.{minor}.{patch_num + 1}-dev"
     bump_args = []
     if args.debug:
         bump_args += ["--allow-dirty", "--dry-run", "--verbose"]
