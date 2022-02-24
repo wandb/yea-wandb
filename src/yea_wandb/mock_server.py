@@ -2103,11 +2103,11 @@ class ParseCTX(object):
             d[k] = getattr(self, v)
         return d
 
-
 if __name__ == "__main__":
     use_yea = "--yea" in sys.argv[1:]
     load_modules(use_yea=use_yea)
 
     app = create_app()
     app.logger.setLevel(logging.INFO)
-    app.run(debug=False, port=int(os.environ.get("PORT", 8547)))
+    app.run(debug=False, port=int(os.getenv("PORT", 8547)), host=os.getenv("HOST", "0.0.0.0"))
+    

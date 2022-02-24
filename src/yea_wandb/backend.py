@@ -11,6 +11,7 @@ import time
 import requests
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
+containerized = True
 
 
 class Backend:
@@ -18,6 +19,11 @@ class Backend:
         self._yc = yc
         self._args = args
         self._server = None
+
+    def get_ip(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
 
     def _free_port(self):
         sock = socket.socket()
@@ -30,6 +36,11 @@ class Backend:
             return
         if self._args.live:
             return
+
+        host = "127.0.0.1"
+        if containerized:  # How can I set this flag from the .yea file?
+            host = "0.0.0.0"
+
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
         port = self._free_port()
         root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
@@ -37,6 +48,7 @@ class Backend:
         command = [sys.executable, "-u", path, "--yea"]
         env = os.environ
         env["PORT"] = str(port)
+        env["HOST"] = host
         env["PYTHONPATH"] = root
         worker_id = 1
         logfname = os.path.join(
@@ -68,7 +80,7 @@ class Backend:
         server.reset_ctx = reset_ctx
 
         server._port = port
-        server.base_url = f"http://localhost:{server._port}"
+        server.base_url = f"http://{host}:{server._port}"
         self._server = server
         started = False
         for _ in range(30):
@@ -95,9 +107,11 @@ class Backend:
             print("ERROR: Server failed to launch, see {}".format(logfname))
             raise Exception("problem")
 
-        os.environ["WANDB_BASE_URL"] = f"http://127.0.0.1:{port}"
+        if containerized:
+            host = self.get_ip()
+        os.environ["WANDB_BASE_URL"] = f"http://{host}:{port}"
         os.environ["WANDB_API_KEY"] = DUMMY_API_KEY
-        os.environ["WANDB_SENTRY_DSN"] = f"http://fakeuser@127.0.0.1:{port}/5288891"
+        os.environ["WANDB_SENTRY_DSN"] = f"http://fakeuser@{host}:{port}/5288891"
 
     # update the mock server context with the new values
     def update_ctx(self, ctx):
