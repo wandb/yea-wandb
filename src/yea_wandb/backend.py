@@ -44,7 +44,7 @@ class Backend:
         self._server = None
         self._params = parse_plugin_args(PLUGIN_DEFAULTS, self._yc._args)
 
-    def get_ip(self):
+    def _get_ip(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.connect(("8.8.8.8", 80))
         return sock.getsockname()[0]
