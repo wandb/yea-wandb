@@ -44,6 +44,11 @@ class Backend:
         self._server = None
         self._params = parse_plugin_args(PLUGIN_DEFAULTS, self._yc._args)
 
+    def _get_ip(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.connect(("8.8.8.8", 80))
+        return sock.getsockname()[0]
+
     def _free_port(self, host):
         sock = socket.socket()
         sock.bind((host, 0))
@@ -59,6 +64,11 @@ class Backend:
         mockserver_host = self._params["mockserver-host"]
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
         port = self._free_port(mockserver_bind)
+
+        # get external ip
+        if mockserver_host == "__auto__":
+            mockserver_host = self._get_ip()
+
         root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
         path = os.path.join(root, "mock_server.py")
         command = [sys.executable, "-u", path, "--yea"]
