@@ -7,10 +7,34 @@ import string
 import subprocess
 import sys
 import time
+from typing import Any, Dict
 
 import requests
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
+
+PLUGIN_DEFAULTS = {
+    "mockserver-bind": "127.0.0.1",
+    "mockserver-host": "localhost",
+}
+
+
+def parse_plugin_args(defaults: Dict, cli_args: Any) -> Dict:
+    plugin_args = {}
+    plugin_args.update(defaults)
+    # TODO: we have this somewhere else im sure
+    prefix = "wandb:"
+    for arg in cli_args.plugin_args:
+        if not arg.startswith(prefix):
+            continue
+        arg = arg[len(prefix) :]
+        if "=" not in arg:
+            raise ValueError(f"Expecting key=value in {arg}")
+        k, v = arg.split("=", 1)
+        if k not in defaults:
+            raise ValueError(f"Unknown plugin key {k}")
+        plugin_args[k] = v
+    return plugin_args
 
 
 class Backend:
@@ -18,10 +42,11 @@ class Backend:
         self._yc = yc
         self._args = args
         self._server = None
+        self._params = parse_plugin_args(PLUGIN_DEFAULTS, self._yc._args)
 
-    def _free_port(self):
+    def _free_port(self, host):
         sock = socket.socket()
-        sock.bind(("", 0))
+        sock.bind((host, 0))
         _, port = sock.getsockname()
         return port
 
@@ -30,14 +55,17 @@ class Backend:
             return
         if self._args.live:
             return
+        mockserver_bind = self._params["mockserver-bind"]
+        mockserver_host = self._params["mockserver-host"]
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
-        port = self._free_port()
+        port = self._free_port(mockserver_bind)
         root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
         path = os.path.join(root, "mock_server.py")
         command = [sys.executable, "-u", path, "--yea"]
         env = os.environ
         env["PORT"] = str(port)
         env["PYTHONPATH"] = root
+        env["MOCKSERVER_BIND"] = mockserver_bind
         worker_id = 1
         logfname = os.path.join(
             self._yc._cfg._cfroot,
@@ -68,7 +96,7 @@ class Backend:
         server.reset_ctx = reset_ctx
 
         server._port = port
-        server.base_url = f"http://localhost:{server._port}"
+        server.base_url = f"http://{mockserver_host}:{server._port}"
         self._server = server
         started = False
         for _ in range(30):
@@ -95,9 +123,9 @@ class Backend:
             print("ERROR: Server failed to launch, see {}".format(logfname))
             raise Exception("problem")
 
-        os.environ["WANDB_BASE_URL"] = f"http://127.0.0.1:{port}"
+        os.environ["WANDB_BASE_URL"] = f"http://{mockserver_host}:{port}"
         os.environ["WANDB_API_KEY"] = DUMMY_API_KEY
-        os.environ["WANDB_SENTRY_DSN"] = f"http://fakeuser@127.0.0.1:{port}/5288891"
+        os.environ["WANDB_SENTRY_DSN"] = f"http://fakeuser@{mockserver_host}:{port}/5288891"
 
     # update the mock server context with the new values
     def update_ctx(self, ctx):
