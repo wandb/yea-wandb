@@ -11,6 +11,7 @@ import yaml
 import six
 import gzip
 import functools
+import time
 import requests
 
 # HACK: restore first two entries of sys path after wandb load
@@ -349,8 +350,13 @@ class HttpException(Exception):
 
 
 class SnoopRelay:
+
+    _inject_count: int
+    _inject_time: float
+
     def __init__(self):
-        pass
+        self._inject_count = 0
+        self._inject_time = 0.0
 
     def relay(self, func):
         @functools.wraps(func)
@@ -372,6 +378,14 @@ class SnoopRelay:
                 if run_id and run_id not in ctx["relay_run_ids"]:
                     ctx["relay_run_ids"].append(run_id)
                 # print("RELAY", url_path, run_id, data)
+                if run_id and run_id.startswith("inject"):
+                    time_now = time.time()
+                    if self._inject_count == 0:
+                        self._inject_time = time_now
+                    self._inject_count += 1
+                    if time_now < self._inject_time + 31:
+                        print("INJECT", self._inject_count, time_now, self._inject_time)
+                        raise HttpException("some error", status_code=500)
                 return data
             assert False
 
