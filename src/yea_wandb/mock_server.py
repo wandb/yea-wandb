@@ -417,14 +417,18 @@ class SnoopRelay:
             r.setdefault("project_name", "relay_proj")
             r.setdefault("entity_name", "relay_entity")
 
-            # NOTE: We are using wandb but it isnt a strict depenedency
-            import wandb
-            api = wandb.Api()
 
-            # TODO: handle an error here
-            run = api.run(f"{run_info['entity']}/{run_info['project']}/{run_id}")
+            # TODO: handle errors better
+            try:
+                # NOTE: We are using wandb but it isnt a strict depenedency
+                import wandb
+                api = wandb.Api()
+                run = api.run(f"{run_info['entity']}/{run_info['project']}/{run_id}")
+            except Exception as e:
+                print(f"ERROR: problem calling public api for run {run_id}", e)
+                continue
+
             value_config = {k: dict(value=v) for k, v in run.rawconfig.items()}
-
             # TODO: need to have a correct state mapping
             exitcode = 0 if run.state == "finished" else 1
 
