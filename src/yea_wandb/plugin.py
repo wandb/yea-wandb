@@ -123,10 +123,10 @@ def parse_term(v, state, result=None):
     ind_list = []
     if len(spl) == 2:
         ind_list = re.findall(r"\[([^[\]]*)\]", "[" + spl[1])
-    found = state.get(var)
-    if found is None:
+    if var not in state:
         print("WARNING: Variable `{}` not found in state keys: {}".format(var, ",".join(state.keys())))
         return None
+    found = state.get(var)
     for ind in ind_list:
         if isinstance(found, list):
             ind = int(ind)
@@ -138,13 +138,13 @@ def parse_term(v, state, result=None):
                 return None
             lookup = found[ind]
         else:
+            if ind not in found:
+                bad = "key {} not found in {} [{}]".format(ind, var, ",".join(ind_list))
+                if result is not None:
+                    result.append("Not found: " + bad)
+                print("WARNING:", bad)
+                return None
             lookup = found.get(ind)
-        if lookup is None:
-            bad = "key {} not found in {} [{}]".format(ind, var, ",".join(ind_list))
-            if result is not None:
-                result.append("Not found: " + bad)
-            print("WARNING:", bad)
-            return None
         found = lookup
     return found
 
