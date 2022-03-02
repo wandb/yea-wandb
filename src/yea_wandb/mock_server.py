@@ -92,7 +92,7 @@ def default_ctx():
         "sentry_events": [],
         "run_cuda_version": None,
         # relay mode, keep track of upsert runs for validation
-        "relay_run_ids": [],
+        "relay_run_info": {},
     }
 
 
@@ -373,18 +373,28 @@ class SnoopRelay:
                 url = f"https://api.wandb.ai{url_path}"
                 resp = requests.post(url, json = body)
                 data = resp.json()
-                run_id = data.get("data", {}).get("upsertBucket", {}).get("bucket", {}).get("name")
+                run_obj = data.get("data", {}).get("upsertBucket", {}).get("bucket", {})
+                project_obj = run_obj.get("project", {})
+
+                run_id = run_obj.get("name")
+                project = project_obj.get("name")
+                entity = project_obj.get("entity", {}).get("name")
+
                 ctx = get_ctx()
-                if run_id and run_id not in ctx["relay_run_ids"]:
-                    ctx["relay_run_ids"].append(run_id)
-                # print("RELAY", url_path, run_id, data)
+                if run_id:
+                    ctx["relay_run_info"].setdefault(run_id, {})
+                    ctx["relay_run_info"][run_id]["project"] = project
+                    ctx["relay_run_info"][run_id]["entity"] = entity
+
+                # TODO: This is a hardcoded for now, will add inject specification to the yea file
                 if run_id and run_id.startswith("inject"):
                     time_now = time.time()
                     if self._inject_count == 0:
                         self._inject_time = time_now
                     self._inject_count += 1
-                    if time_now < self._inject_time + 31:
-                        print("INJECT", self._inject_count, time_now, self._inject_time)
+                    if time_now < self._inject_time + 21:
+                        # print("INJECT", self._inject_count, time_now, self._inject_time)
+                        time.sleep(12)
                         raise HttpException("some error", status_code=500)
                 return data
             assert False
@@ -393,7 +403,7 @@ class SnoopRelay:
         return wrapper
 
     def context_enrich(self, ctx):
-        for run_id in ctx["relay_run_ids"]:
+        for run_id, run_info in ctx["relay_run_info"].items():
             run_num = len(ctx["runs"])
             insert = run_id not in ctx["run_ids"]
             if insert:
@@ -407,11 +417,21 @@ class SnoopRelay:
             r.setdefault("project_name", "relay_proj")
             r.setdefault("entity_name", "relay_entity")
 
-            # TODO: need to use public api to query this type of info
-            for c in ctx, run_ctx:
-                c.setdefault("config", []).append({})
-                c.setdefault("summary", []).append({})
+            # NOTE: We are using wandb but it isnt a strict depenedency
+            import wandb
+            api = wandb.Api()
 
+            # TODO: handle an error here
+            run = api.run(f"{run_info['entity']}/{run_info['project']}/{run_id}")
+            value_config = {k: dict(value=v) for k, v in run.rawconfig.items()}
+
+            # TODO: need to have a correct state mapping
+            exitcode = 0 if run.state == "finished" else 1
+
+            for c in ctx, run_ctx:
+                c.setdefault("config", []).append(dict(value_config))
+                c.setdefault("file_stream", []).append(
+                        dict(exitcode=exitcode, files={"wandb-summary.json": dict(offset=0, content=[json.dumps(run.summary_metrics)])}))
             ctx["runs"][run_id] = run_ctx
         # print("SEND", ctx)
         return ctx
