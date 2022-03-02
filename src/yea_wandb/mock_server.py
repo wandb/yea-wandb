@@ -413,7 +413,7 @@ class SnoopRelay:
             # NOTE: not used, added for consistancy with non-relay mode
             r = run_ctx.setdefault("run", {})
             r.setdefault("display_name", f"relay_name-{run_num}")
-            r.setdefault("storage_id", "storageid{run_num}")
+            r.setdefault("storage_id", f"storageid{run_num}")
             r.setdefault("project_name", "relay_proj")
             r.setdefault("entity_name", "relay_entity")
 
