@@ -371,7 +371,7 @@ class SnoopRelay:
                 body = request.get_json()
 
                 url = f"https://api.wandb.ai{url_path}"
-                resp = requests.post(url, json = body)
+                resp = requests.post(url, json=body)
                 data = resp.json()
                 run_obj = data.get("data", {}).get("upsertBucket", {}).get("bucket", {})
                 project_obj = run_obj.get("project", {})
@@ -400,6 +400,7 @@ class SnoopRelay:
             assert False
 
             return func(*args, **kwargs)
+
         return wrapper
 
     def context_enrich(self, ctx):
@@ -417,11 +418,11 @@ class SnoopRelay:
             r.setdefault("project_name", "relay_proj")
             r.setdefault("entity_name", "relay_entity")
 
-
             # TODO: handle errors better
             try:
                 # NOTE: We are using wandb but it isnt a strict depenedency
                 import wandb
+
                 api = wandb.Api()
                 run = api.run(f"{run_info['entity']}/{run_info['project']}/{run_id}")
             except Exception as e:
@@ -435,7 +436,15 @@ class SnoopRelay:
             for c in ctx, run_ctx:
                 c.setdefault("config", []).append(dict(value_config))
                 c.setdefault("file_stream", []).append(
-                        dict(exitcode=exitcode, files={"wandb-summary.json": dict(offset=0, content=[json.dumps(run.summary_metrics)])}))
+                    dict(
+                        exitcode=exitcode,
+                        files={
+                            "wandb-summary.json": dict(
+                                offset=0, content=[json.dumps(run.summary_metrics)]
+                            )
+                        },
+                    )
+                )
             ctx["runs"][run_id] = run_ctx
         # print("SEND", ctx)
         return ctx
