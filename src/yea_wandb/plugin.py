@@ -265,6 +265,7 @@ class YeaWandbPlugin:
             run["run_id"] = parsed.run_id
             run["config"] = parsed.config_user
             run["config_wandb"] = parsed.config_wandb
+            run["history"] = parsed.history
             run["summary"] = parsed.summary_user
             run["summary_wandb"] = parsed.summary_wandb
             run["telemetry"] = parsed.telemetry
