@@ -285,6 +285,7 @@ class YeaWandbPlugin:
             runs.append(run)
 
         state[":wandb:artifacts"] = glob_parsed.artifacts
+        state[":wandb:portfolio_links"] = glob_parsed.portfolio_links
         state[":wandb:sentry_events"] = glob_parsed.sentry_events
         state[":wandb:runs"] = runs
         # deprecate this
