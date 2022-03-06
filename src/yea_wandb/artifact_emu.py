@@ -73,7 +73,7 @@ class ArtifactEmulator:
             "aliases": [a["alias"] for a in aliases]
         }
 
-        # We automatically create a portfolio for the user if we can't find the one given. 
+        # We automatically create a portfolio for the user if we can't find the one given.
         links = self._portfolio_links.setdefault(pfolio_name, [])
         if not any(map(lambda x: artifact_id == x["id"], links)):
             links.append(art)
