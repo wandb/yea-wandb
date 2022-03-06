@@ -68,7 +68,6 @@ class ArtifactEmulator:
             artifact_id = variables.get("clientID")
         aliases = variables.get("aliases")
         # TODO: assert artifact exists in our _artifacts_by_id, if not change response
-        
         art = {
             "id": artifact_id,
             "aliases": [a["alias"] for a in aliases]
@@ -83,7 +82,7 @@ class ArtifactEmulator:
         self._ctx["portfolio_links"][pfolio_name]["num"] = len(links)
         num = self._ctx["portfolio_links"][pfolio_name]["num"]
 
-        response = {"data": {"linkArtifact": {"versionIndex": num-1}}}
+        response = {"data": {"linkArtifact": {"versionIndex": num - 1}}}
         return response
 
     def create_files(self, variables):
