@@ -67,7 +67,6 @@ class ArtifactEmulator:
         if not pfolio_name or not artifact_id:
             raise ValueError("query variables must contain artifactPortfolioName and either artifactID or clientID")
         aliases = variables.get("aliases")
-        
         # We automatically create a portfolio for the user if we can't find the one given.
         links = self._portfolio_links.setdefault(pfolio_name, [])
         if not any(map(lambda x: x["id"] == artifact_id, links)):
