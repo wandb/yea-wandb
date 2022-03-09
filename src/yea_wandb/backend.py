@@ -131,7 +131,9 @@ class Backend:
                 else:
                     raise ValueError("Server failed to start.")
         if started:
-            print("INFO: Mock server listing on {} see {}".format(server._port, logfname))
+            print(
+                "INFO: Mock server listing on {} see {}".format(server._port, logfname)
+            )
         else:
             server.terminate()
             print("ERROR: Server failed to launch, see {}".format(logfname))
@@ -140,7 +142,9 @@ class Backend:
         os.environ["WANDB_BASE_URL"] = f"http://{mockserver_host}:{port}"
         if not mockserver_relay:
             os.environ["WANDB_API_KEY"] = DUMMY_API_KEY
-        os.environ["WANDB_SENTRY_DSN"] = f"http://fakeuser@{mockserver_host}:{port}/5288891"
+        os.environ[
+            "WANDB_SENTRY_DSN"
+        ] = f"http://fakeuser@{mockserver_host}:{port}/5288891"
 
     # update the mock server context with the new values
     def update_ctx(self, ctx):

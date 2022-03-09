@@ -1,7 +1,6 @@
 [tool.black]
-line-length = 120
+line-length = 88
 exclude = '''
   src/yea_wandb/mock_requests.py
-| src/yea_wandb/artifact_emu.py
 | src/yea_wandb/mock_server.py
 '''
