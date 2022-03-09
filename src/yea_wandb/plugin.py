@@ -124,14 +124,20 @@ def parse_term(v, state, result=None):
     if len(spl) == 2:
         ind_list = re.findall(r"\[([^[\]]*)\]", "[" + spl[1])
     if var not in state:
-        print("WARNING: Variable `{}` not found in state keys: {}".format(var, ",".join(state.keys())))
+        print(
+            "WARNING: Variable `{}` not found in state keys: {}".format(
+                var, ",".join(state.keys())
+            )
+        )
         return None
     found = state.get(var)
     for ind in ind_list:
         if isinstance(found, list):
             ind = int(ind)
             if ind < 0 or ind >= len(found):
-                bad = "index {} not found in {} [{}]".format(ind, var, ",".join(ind_list))
+                bad = "index {} not found in {} [{}]".format(
+                    ind, var, ",".join(ind_list)
+                )
                 if result is not None:
                     result.append("Not found: " + bad)
                 print("WARNING:", bad)
@@ -265,6 +271,7 @@ class YeaWandbPlugin:
             run["run_id"] = parsed.run_id
             run["config"] = parsed.config_user
             run["config_wandb"] = parsed.config_wandb
+            run["history"] = parsed.history
             run["summary"] = parsed.summary_user
             run["summary_wandb"] = parsed.summary_wandb
             run["telemetry"] = parsed.telemetry
@@ -284,6 +291,7 @@ class YeaWandbPlugin:
             runs.append(run)
 
         state[":wandb:artifacts"] = glob_parsed.artifacts
+        state[":wandb:portfolio_links"] = glob_parsed.portfolio_links
         state[":wandb:sentry_events"] = glob_parsed.sentry_events
         state[":wandb:runs"] = runs
         # deprecate this

@@ -16,6 +16,7 @@ DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
 PLUGIN_DEFAULTS = {
     "mockserver-bind": "127.0.0.1",
     "mockserver-host": "localhost",
+    "mockserver-relay": "",
 }
 
 
@@ -62,6 +63,7 @@ class Backend:
             return
         mockserver_bind = self._params["mockserver-bind"]
         mockserver_host = self._params["mockserver-host"]
+        mockserver_relay = self._params["mockserver-relay"]
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
         port = self._free_port(mockserver_bind)
 
@@ -76,6 +78,8 @@ class Backend:
         env["PORT"] = str(port)
         env["PYTHONPATH"] = root
         env["MOCKSERVER_BIND"] = mockserver_bind
+        if mockserver_relay:
+            env["MOCKSERVER_RELAY"] = mockserver_relay
         worker_id = 1
         logfname = os.path.join(
             self._yc._cfg._cfroot,
@@ -127,15 +131,20 @@ class Backend:
                 else:
                     raise ValueError("Server failed to start.")
         if started:
-            print("INFO: Mock server listing on {} see {}".format(server._port, logfname))
+            print(
+                "INFO: Mock server listing on {} see {}".format(server._port, logfname)
+            )
         else:
             server.terminate()
             print("ERROR: Server failed to launch, see {}".format(logfname))
             raise Exception("problem")
 
         os.environ["WANDB_BASE_URL"] = f"http://{mockserver_host}:{port}"
-        os.environ["WANDB_API_KEY"] = DUMMY_API_KEY
-        os.environ["WANDB_SENTRY_DSN"] = f"http://fakeuser@{mockserver_host}:{port}/5288891"
+        if not mockserver_relay:
+            os.environ["WANDB_API_KEY"] = DUMMY_API_KEY
+        os.environ[
+            "WANDB_SENTRY_DSN"
+        ] = f"http://fakeuser@{mockserver_host}:{port}/5288891"
 
     # update the mock server context with the new values
     def update_ctx(self, ctx):
