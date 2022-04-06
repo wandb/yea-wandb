@@ -13,6 +13,7 @@ import gzip
 import functools
 import time
 import requests
+from werkzeug.exceptions import BadRequest
 
 # HACK: restore first two entries of sys path after wandb load
 save_path = sys.path[:2]
@@ -176,7 +177,11 @@ def run(ctx):
         "events": ['{"cpu": 10}', '{"cpu": 20}', '{"cpu": 30}'],
         "files": {
             # Special weights url by default, if requesting upload we set the name
-            "edges": [{"node": fileNode,}]
+            "edges": [
+                {
+                    "node": fileNode,
+                }
+            ]
         },
         "sampledHistory": [[{"loss": 0, "acc": 100}, {"loss": 1, "acc": 0}]],
         "shouldStop": False,
@@ -231,7 +236,9 @@ def artifact(
                 "alias": "v%i" % ctx["page_count"],
             }
         ],
-        "artifactSequence": {"name": collection_name,},
+        "artifactSequence": {
+            "name": collection_name,
+        },
         "artifactType": {"name": "dataset"},
         "currentManifest": {
             "file": {
@@ -476,7 +483,13 @@ def create_app(user_ctx=None):
     def update_ctx():
         """Updating context for live_mock_server"""
         ctx = get_ctx()
-        body = request.get_json()
+        # in Flask/Werkzeug 2.1.0 get_json raises an exception on
+        # empty json, so we try/catch here
+        try:
+            body = request.get_json()
+        except BadRequest:
+            body = None
+
         if request.method == "GET":
             ctx = snoop.context_enrich(ctx)
             return json.dumps(ctx)
@@ -756,7 +769,11 @@ def create_app(user_ctx=None):
                 return json.dumps(
                     {
                         "data": {
-                            "QueryType": {"fields": [{"name": "serverInfo"},]},
+                            "QueryType": {
+                                "fields": [
+                                    {"name": "serverInfo"},
+                                ]
+                            },
                             "ServerInfoType": {
                                 "fields": [
                                     {"name": "cliVersionInfo"},
@@ -770,7 +787,11 @@ def create_app(user_ctx=None):
             return json.dumps(
                 {
                     "data": {
-                        "QueryType": {"fields": [{"name": "serverInfo"},]},
+                        "QueryType": {
+                            "fields": [
+                                {"name": "serverInfo"},
+                            ]
+                        },
                         "ServerInfoType": {
                             "fields": [
                                 {"name": "cliVersionInfo"},
@@ -859,7 +880,15 @@ def create_app(user_ctx=None):
             )
         if "mutation CreateAgent(" in body["query"]:
             return json.dumps(
-                {"data": {"createAgent": {"agent": {"id": "mock-server-agent-93xy",}}}}
+                {
+                    "data": {
+                        "createAgent": {
+                            "agent": {
+                                "id": "mock-server-agent-93xy",
+                            }
+                        }
+                    }
+                }
             )
         if "mutation Heartbeat(" in body["query"]:
             new_run_needed = body["variables"]["runState"] == "{}"
@@ -869,7 +898,9 @@ def create_app(user_ctx=None):
                 {
                     "data": {
                         "agentHeartbeat": {
-                            "agent": {"id": "mock-server-agent-93xy",},
+                            "agent": {
+                                "id": "mock-server-agent-93xy",
+                            },
                             "commands": (
                                 json.dumps(
                                     [
@@ -1044,7 +1075,14 @@ def create_app(user_ctx=None):
             art = artifact(ctx, id_override=id)
             if len(art.get("aliases", [])) and not delete_aliases:
                 raise Exception("delete_aliases not set, but artifact has aliases")
-            return {"data": {"deleteArtifact": {"artifact": art, "success": True,}}}
+            return {
+                "data": {
+                    "deleteArtifact": {
+                        "artifact": art,
+                        "success": True,
+                    }
+                }
+            }
         if "mutation CreateArtifactManifest(" in body["query"]:
             manifest = {
                 "id": 1,
@@ -1065,7 +1103,13 @@ def create_app(user_ctx=None):
             run_ctx = ctx["runs"].setdefault(run_name, default_ctx())
             for c in ctx, run_ctx:
                 c["manifests_created"].append(manifest)
-            return {"data": {"createArtifactManifest": {"artifactManifest": manifest,}}}
+            return {
+                "data": {
+                    "createArtifactManifest": {
+                        "artifactManifest": manifest,
+                    }
+                }
+            }
         if "mutation UpdateArtifactManifest(" in body["query"]:
             manifest = {
                 "id": 1,
@@ -1082,7 +1126,13 @@ def create_app(user_ctx=None):
                     "uploadHeaders": "",
                 },
             }
-            return {"data": {"updateArtifactManifest": {"artifactManifest": manifest,}}}
+            return {
+                "data": {
+                    "updateArtifactManifest": {
+                        "artifactManifest": manifest,
+                    }
+                }
+            }
         if "mutation CreateArtifactFiles" in body["query"]:
             if ART_EMU:
                 return ART_EMU.create_files(variables=body["variables"])
@@ -1239,7 +1289,9 @@ def create_app(user_ctx=None):
                     if full_name is not None:
                         collection_name = full_name.split(":")[0]
                     art = artifact(
-                        ctx, collection_name=collection_name, request_url_root=base_url,
+                        ctx,
+                        collection_name=collection_name,
+                        request_url_root=base_url,
                     )
                 # code artifacts use source-RUNID names, we return the code type
                 art["artifactType"] = {"id": 2, "name": "code"}
@@ -1785,10 +1837,14 @@ def create_app(user_ctx=None):
                     },
                 }
         elif file == "wandb-metadata.json":
+            if ctx["return_jupyter_in_run_info"]:
+                code_path = "one_cell.ipynb"
+            else:
+                code_path = "train.py"
             result = {
                 "docker": "test/docker",
                 "program": "train.py",
-                "codePath": "train.py",
+                "codePath": code_path,
                 "args": ["--test", "foo"],
                 "git": ctx.get("git", {}),
             }
