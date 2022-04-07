@@ -45,7 +45,11 @@ def bump_release_from_dev(current_version):
     parts = current_version.split("-")
     if len(parts) != 2:
         version_problem(current_version)
-    major, minor, patch = parts[0].split(".")
+
+    version_parts = parts[0].split(".")
+    if len(version_parts) != 3:
+        version_problem(current_version)
+    major, minor, patch = version_parts
 
     new_version = f"{major}.{minor}.{patch}"
     bump_args = []
