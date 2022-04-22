@@ -13,7 +13,7 @@ setup(
         "Flask",
         "requests",
         # "yea==0.7.15",
-        "yea @ git+https://github.com/wandb/yea.git@os-var-run"
+        "yea @ git+https://github.com/wandb/yea.git@os-var-run",
     ],
     package_dir={"": "src"},
     entry_points={
