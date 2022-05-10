@@ -17,6 +17,7 @@ PLUGIN_DEFAULTS = {
     "mockserver-bind": "127.0.0.1",
     "mockserver-host": "localhost",
     "mockserver-relay": "",
+    "mockserver-relay-remote-base-url": "https://api.wandb.ai",
 }
 
 
@@ -64,12 +65,16 @@ class Backend:
         mockserver_bind = self._params["mockserver-bind"]
         mockserver_host = self._params["mockserver-host"]
         mockserver_relay = self._params["mockserver-relay"]
+        mockserver_relay_remote_base_url = self._params["mockserver-relay-remote-base-url"]
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
         port = self._free_port(mockserver_bind)
 
         # get external ip
         if mockserver_host == "__auto__":
             mockserver_host = self._get_ip()
+
+        # with open("/Users/dimaduev/dev/client/2.txt", "w") as f:
+        #     f.write(f"{mockserver_host}")
 
         root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
         path = os.path.join(root, "mock_server.py")
@@ -80,6 +85,7 @@ class Backend:
         env["MOCKSERVER_BIND"] = mockserver_bind
         if mockserver_relay:
             env["MOCKSERVER_RELAY"] = mockserver_relay
+            env["MOCKSERVER_RELAY_REMOTE_BASE_URL"] = mockserver_relay_remote_base_url
         worker_id = 1
         logfname = os.path.join(
             self._yc._cfg._cfroot,
@@ -119,7 +125,7 @@ class Backend:
                 if res.status_code == 200:
                     started = True
                     break
-                print("INFO: Attempting to connect but got: %s" % res)
+                print(f"INFO: Attempting to connect but got: {res}")
             except requests.exceptions.RequestException:
                 print(
                     "INFO: Timed out waiting for server to start...",
@@ -132,16 +138,19 @@ class Backend:
                     raise ValueError("Server failed to start.")
         if started:
             print(
-                "INFO: Mock server listing on {} see {}".format(server._port, logfname)
+                f"INFO: Mock server listing on {server._port}, see {logfname}"
             )
         else:
             server.terminate()
-            print("ERROR: Server failed to launch, see {}".format(logfname))
+            print(f"ERROR: Server failed to launch, see {logfname}")
             raise Exception("problem")
 
         os.environ["WANDB_BASE_URL"] = f"http://{mockserver_host}:{port}"
         if not mockserver_relay:
             os.environ["WANDB_API_KEY"] = DUMMY_API_KEY
+        else:
+            # os.environ["WANDB_BASE_URL"] = mockserver_relay_remote_base_url
+            pass
         os.environ[
             "WANDB_SENTRY_DSN"
         ] = f"http://fakeuser@{mockserver_host}:{port}/5288891"
