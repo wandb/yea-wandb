@@ -75,9 +75,6 @@ class Backend:
         if mockserver_host == "__auto__":
             mockserver_host = self._get_ip()
 
-        # with open("/Users/dimaduev/dev/client/2.txt", "w") as f:
-        #     f.write(f"{mockserver_host}")
-
         root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
         path = os.path.join(root, "mock_server.py")
         command = [sys.executable, "-u", path, "--yea"]
