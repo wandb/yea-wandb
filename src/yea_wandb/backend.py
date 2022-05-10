@@ -65,7 +65,9 @@ class Backend:
         mockserver_bind = self._params["mockserver-bind"]
         mockserver_host = self._params["mockserver-host"]
         mockserver_relay = self._params["mockserver-relay"]
-        mockserver_relay_remote_base_url = self._params["mockserver-relay-remote-base-url"]
+        mockserver_relay_remote_base_url = self._params[
+            "mockserver-relay-remote-base-url"
+        ]
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
         port = self._free_port(mockserver_bind)
 
@@ -137,9 +139,7 @@ class Backend:
                 else:
                     raise ValueError("Server failed to start.")
         if started:
-            print(
-                f"INFO: Mock server listing on {server._port}, see {logfname}"
-            )
+            print(f"INFO: Mock server listing on {server._port}, see {logfname}")
         else:
             server.terminate()
             print(f"ERROR: Server failed to launch, see {logfname}")
