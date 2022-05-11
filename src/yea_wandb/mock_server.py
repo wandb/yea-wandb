@@ -414,7 +414,7 @@ class SnoopRelay:
                         time.sleep(12)
                         raise HttpException("some error", status_code=500)
                 return data
-            assert False  # todo: why is this here, Jeff?
+            assert False  # we do not support get requests yet, and likely never will :)
 
             return func(*args, **kwargs)
 
