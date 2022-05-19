@@ -12,7 +12,7 @@ setup(
     install_requires=[
         "Flask",
         "requests",
-        "yea==0.7.16",
+        "yea==0.7.17",
     ],
     package_dir={"": "src"},
     entry_points={
