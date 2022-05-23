@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 
 def version_problem(current_version):
-    print("Unhandled version string: {}".format(current_version))
+    print(f"Unhandled version string: {current_version}")
     sys.exit(1)
 
 

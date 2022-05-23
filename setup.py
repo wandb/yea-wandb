@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """yea setup."""
 
 from setuptools import setup
@@ -6,13 +5,13 @@ from setuptools import setup
 
 setup(
     name="yea-wandb",
-    version="0.7.54",
+    version="0.7.55",
     description="Test harness wandb plugin",
     packages=["yea_wandb"],
     install_requires=[
         "Flask",
         "requests",
-        "yea==0.7.17",
+        "yea==0.7.18",
     ],
     package_dir={"": "src"},
     entry_points={
