@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """yea setup."""
 
 from setuptools import setup
@@ -12,7 +11,7 @@ setup(
     install_requires=[
         "Flask",
         "requests",
-        "yea==0.7.17",
+        "yea==0.7.18",
     ],
     package_dir={"": "src"},
     entry_points={

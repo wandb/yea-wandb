@@ -191,7 +191,7 @@ def parse_expr(adict, state, result):
         op = k[len(OPSTR) :]
         opfunc = OPS.get(op) or OPS_FUNCS.get(op)
         if not opfunc:
-            result.append("unknown op: {}".format(op))
+            result.append(f"unknown op: {op}")
             return not result
         assert len(v) == 2, "ops need 2 parameters"
         v1 = parse_term(v[0], state, result)
@@ -202,7 +202,7 @@ def parse_expr(adict, state, result):
         else:
             f = getattr(v1, opfunc, None)
             if f is None:
-                result.append("unimplemented op: {}".format(opfunc))
+                result.append(f"unimplemented op: {opfunc}")
                 return not result
             b = f(v2)
         # hack to invert result for not_contains
@@ -210,7 +210,7 @@ def parse_expr(adict, state, result):
             b = not (b)
         if not b:
             print("invalid", k, v1, op, v2)
-            result.append("ASSERT {}: {} {} {}".format(k, v1, op, v2))
+            result.append(f"ASSERT {k}: {v1} {op} {v2}")
         return not result
     # if not isinstance(v, (str, int, float)):
     #     print("WARNING: Not sure how to parse (might be ok)")
@@ -218,7 +218,7 @@ def parse_expr(adict, state, result):
     v2 = parse_term(v, state, result)
     if v1 != v2:
         # print("ERROR: Unequal", k, v1, v2)
-        result.append("ASSERT {}: {} != {}".format(k, v1, v2))
+        result.append(f"ASSERT {k}: {v1} != {v2}")
     return not result
 
 
