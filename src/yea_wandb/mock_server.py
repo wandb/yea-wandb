@@ -1375,7 +1375,7 @@ def create_app(user_ctx=None):
                                             {
                                                 "node": {
                                                     "id": "test",
-                                                    "associatedRunId": "test",
+                                                    "resultingRunId": "test",
                                                 }
                                             }
                                         ]
@@ -1396,7 +1396,7 @@ def create_app(user_ctx=None):
                                             {
                                                 "node": {
                                                     "id": "test",
-                                                    "associatedRunId": None,
+                                                    "resultingRunId": None,
                                                 }
                                             }
                                         ]
