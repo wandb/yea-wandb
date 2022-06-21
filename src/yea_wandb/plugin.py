@@ -276,6 +276,7 @@ class YeaWandbPlugin:
             run["summary_wandb"] = parsed.summary_wandb
             run["telemetry"] = parsed.telemetry
             run["metrics"] = parsed.metrics
+            run["stats"] = parsed.stats
             run["exitcode"] = parsed.exit_code
             run["files"] = parsed.files
             run["output"] = parsed.output
