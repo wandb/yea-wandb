@@ -10,7 +10,7 @@ from yea_wandb import plugin
 def check_state_fn():
     def fn(tname, state):
         print("TNAME", tname)
-        root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
         path = os.path.join(root, "tests", "configs", tname + ".yea")
         yc = context.YeaContext(args=None)
         t = ytest.YeaTest(tname=path, yc=yc)
