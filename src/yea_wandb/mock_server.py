@@ -2248,9 +2248,9 @@ class ParseCTX:
 
                 # pad list if our offset is too large (is this what bt would do?)
                 # TODO: is this pad the right thing or should we assert if offset is past len
-                l += [pad] * (offset-len(l))
+                l += [pad] * (offset - len(l))
 
-                l[offset:offset+len(lines)] = lines
+                l[offset : offset + len(lines)] = lines
             data[k] = l
         return data
 
