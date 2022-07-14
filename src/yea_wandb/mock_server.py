@@ -2241,12 +2241,14 @@ class ParseCTX:
                 assert content is not None
                 if k == "output.log":
                     lines = content
+                    pad = ""
                 else:
-                    lines = map(json.loads, content)
+                    lines = list(map(json.loads, content))
+                    pad = {}
 
                 # pad list if our offset is too large (is this what bt would do?)
                 # TODO: is this pad the right thing or should we assert if offsets is past len
-                l += [""] * (offset-len(l))
+                l += [pad] * (offset-len(l))
 
                 l[offset:offset+len(lines)] = lines
             data[k] = l
