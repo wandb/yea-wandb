@@ -1,18 +1,19 @@
 import os
 import pytest
 
-from yea import ytest
+from yea import cli
 from yea import context
+from yea import ytest
 from yea_wandb import plugin
 
 
 @pytest.fixture
-def check_state_fn():
+def check_state_fn(mocked_yea_context):
     def fn(tname, state):
         print("TNAME", tname)
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
         path = os.path.join(root, "tests", "configs", tname + ".yea")
-        yc = context.YeaContext(args=None)
+        yc = mocked_yea_context
         t = ytest.YeaTest(tname=path, yc=yc)
         t._load()
         yp = plugin.YeaWandbPlugin(yc=yc)

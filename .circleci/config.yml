@@ -25,9 +25,9 @@ workflows:
          image: "python:3.7"
          toxenv: "black,flake8,mypy"
       - test:
-         name: "lin-py37"
-         image: "python:3.7"
-         toxenv: "py37,covercircle"
+         name: "lin-py38"
+         image: "python:3.8"
+         toxenv: "py38,covercircle"
 
 jobs:
     test:
