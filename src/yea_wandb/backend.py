@@ -81,7 +81,9 @@ class Backend:
             if not api_key:
                 auth = requests.utils.get_netrc_auth(base_url)
                 if not auth:
-                    raise ValueError(f"must configure api key by env or in netrc for {base_url}")
+                    raise ValueError(
+                        f"must configure api key by env or in netrc for {base_url}"
+                    )
                 api_key = auth[-1]
                 os.environ["WANDB_API_KEY"] = api_key
 
