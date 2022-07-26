@@ -60,8 +60,6 @@ class Backend:
     def start(self):
         if self._args.dryrun:
             return
-        if self._args.live:
-            return
         mockserver_bind = self._params["mockserver-bind"]
         mockserver_host = self._params["mockserver-host"]
         mockserver_relay = self._params["mockserver-relay"]
@@ -69,6 +67,26 @@ class Backend:
             "mockserver-relay-remote-base-url"
         ]
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
+
+        # if we are using live mode. force mock_server plugin defaults
+        if self._args.live:
+            mockserver_bind = "0.0.0.0"
+            mockserver_host = "__auto__"
+            mockserver_relay = "true"
+            base_url = os.environ.get("WANDB_BASE_URL", "https://api.wandb.ai")
+            mockserver_relay_remote_base_url = base_url
+
+            # setup api key
+            api_key = os.environ.get("WANDB_API_KEY")
+            if not api_key:
+                auth = requests.utils.get_netrc_auth(base_url)
+                if not auth:
+                    raise ValueError(
+                        f"must configure api key by env or in netrc for {base_url}"
+                    )
+                api_key = auth[-1]
+                os.environ["WANDB_API_KEY"] = api_key
+
         port = self._free_port(mockserver_bind)
 
         # get external ip
