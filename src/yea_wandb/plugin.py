@@ -1,5 +1,6 @@
 """wandb plugin for yea."""
 
+import json
 import pprint
 import re
 from typing import Any, Dict, Optional
@@ -298,9 +299,16 @@ class YeaWandbPlugin:
         # deprecate this
         state[":wandb:runs_len"] = len(runs)
 
+        # fill in profile info
+        if ytest and ytest._profile_file:
+            with open(ytest._profile_file) as f:
+                data = json.load(f)
+                state[":yea:profile"] = data
+
         # TODO(): yea should actually have its own checks, for now do it here
         if ytest:
             state[":yea:exit"] = ytest._retcode
+            state[":yea:time"] = ytest._time
 
         if debug:
             pp = pprint.PrettyPrinter(indent=2)
