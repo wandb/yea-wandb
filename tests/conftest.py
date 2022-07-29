@@ -28,6 +28,7 @@ def default_cli_args(
     tests: Optional[List[str]] = None,
     plugin_args: Optional[list] = None,
     strict: Optional[bool] = False,
+    noskip: Optional[bool] = False,
 ) -> dict:
     return {
         "action": action,
@@ -43,6 +44,7 @@ def default_cli_args(
         "tests": tests,
         "plugin_args": plugin_args,
         "strict": strict,
+        "noskip": noskip,
     }
 
 
