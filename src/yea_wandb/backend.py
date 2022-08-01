@@ -70,8 +70,9 @@ class Backend:
 
         # if we are using live mode. force mock_server plugin defaults
         if self._args.live:
-            mockserver_bind = "0.0.0.0"
-            mockserver_host = "__auto__"
+            # This is causing issues, so lets not do it for now, localhost is safer
+            # mockserver_bind = "0.0.0.0"
+            # mockserver_host = "__auto__"
             mockserver_relay = "true"
             base_url = os.environ.get("WANDB_BASE_URL", "https://api.wandb.ai")
             mockserver_relay_remote_base_url = base_url
