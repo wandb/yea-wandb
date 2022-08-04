@@ -9,7 +9,7 @@ setup(
     description="Test harness wandb plugin",
     packages=["yea_wandb"],
     install_requires=[
-        "Flask",
+        "Flask<2.2.0",
         "requests",
         "yea==0.8.3",
     ],
