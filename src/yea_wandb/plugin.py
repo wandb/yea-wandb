@@ -5,6 +5,7 @@ import pprint
 import re
 from typing import Any, Dict, Optional
 
+from yea import result
 from yea_wandb import backend
 
 
@@ -354,12 +355,17 @@ class YeaWandbPlugin:
         result = list(set(result))
         return result
 
-    def test_check(self, t, debug=False):
+    def test_check(self, t, debug=False) -> result.ResultData:
         state = self._get_backend_state(debug=debug, ytest=t)
-        result_list = None
+
+        result_data = result.ResultData()
         if state:
-            result_list = self._check_state(t, state)
-        return result_list
+            failures = self._check_state(t, state)
+            if failures:
+                result_data.failures = failures
+            # share the state for now
+            result_data._state = state
+        return result_data
 
     def test_prep(self, t):
         pass
