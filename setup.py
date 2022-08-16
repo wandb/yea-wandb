@@ -5,13 +5,13 @@ from setuptools import setup
 
 setup(
     name="yea-wandb",
-    version="0.8.10",
+    version="0.8.11",
     description="Test harness wandb plugin",
     packages=["yea_wandb"],
     install_requires=[
         "Flask",
         "requests",
-        "yea==0.8.5",
+        "yea==0.8.6",
     ],
     package_dir={"": "src"},
     entry_points={
