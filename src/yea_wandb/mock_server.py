@@ -2234,8 +2234,13 @@ index 30d74d2..9a2c773 100644
         data = request.get_data()
         data = gzip.decompress(data)
         data = str(data, "utf-8")
-        data = json.loads(data)
-        ctx["sentry_sessions"].append(data)
+        envelope = []
+        for line in data.splitlines():
+            if not line:
+                continue
+            line = json.loads(line)
+            envelope.append(line)
+        ctx["sentry_sessions"].append(envelope)
         return ""
 
     @app.errorhandler(404)
