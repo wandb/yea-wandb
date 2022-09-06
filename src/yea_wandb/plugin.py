@@ -297,6 +297,7 @@ class YeaWandbPlugin:
         state[":wandb:artifacts"] = glob_parsed.artifacts
         state[":wandb:portfolio_links"] = glob_parsed.portfolio_links
         state[":wandb:sentry_events"] = glob_parsed.sentry_events
+        state[":wandb:sentry_sessions"] = glob_parsed.sentry_sessions
         state[":wandb:runs"] = runs
         # deprecate this
         state[":wandb:runs_len"] = len(runs)
