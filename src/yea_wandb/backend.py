@@ -8,8 +8,14 @@ import subprocess
 import sys
 import time
 from typing import Any, Dict
+import logging
 
+import netrc
+import urllib
 import requests
+
+from .relay import RelayServer
+import flask.cli
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
 
@@ -57,15 +63,49 @@ class Backend:
         _, port = sock.getsockname()
         return port
 
+    def _start_mitm_relay(self, base_url):
+
+        flask.cli.show_server_banner = lambda *args: None
+        inject = []
+        log = logging.getLogger("werkzeug")
+        log.setLevel(logging.ERROR)
+        _relay_server = RelayServer(base_url=base_url, inject=inject)
+        _relay_server.start()
+        return _relay_server.relay_url
+
+    def _start_mitm(self):
+        base_url = os.environ.get("WANDB_BASE_URL", "https://api.wandb.ai")
+        api_key = os.environ.get("WANDB_API_KEY")
+        
+        if not api_key:
+            netloc = urllib.parse.urlparse(base_url).netloc
+            net = netrc.netrc()
+            got = net.authenticators(netloc)
+            user, account, passwd = got
+            api_key = passwd
+
+        url = self._start_mitm_relay(base_url)
+        os.environ["WANDB_BASE_URL"] = url
+        os.environ["WANDB_API_KEY"] = api_key
+        # TODO: disable until the mitm server implements console stuff correctly
+        os.environ["WANDB_CONSOLE"] = "off"
+        os.environ["YEA_WANDB_MITM"] = url
+
     def start(self):
         if self._args.dryrun:
             return
+
         mockserver_bind = self._params["mockserver-bind"]
         mockserver_host = self._params["mockserver-host"]
         mockserver_relay = self._params["mockserver-relay"]
         mockserver_relay_remote_base_url = self._params[
             "mockserver-relay-remote-base-url"
         ]
+
+        if self._args.mitm:
+            self._start_mitm()
+            return
+
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
 
         # if we are using live mode. force mock_server plugin defaults
