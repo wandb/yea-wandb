@@ -475,83 +475,17 @@ class InjectedResponse:
         }
 
 
-from collections import defaultdict
-
-
-class RelayControlObject:
-    def __init__(self) -> None:
-        self._event = threading.Event()
-        self._event.set()
-        self._thread = None
-
-    def set(self, delay=None) -> None:
-        if not delay:
-            self._event.set()
-            return
-        delayed_call = threading.Timer(delay, self.set)
-        self._thread = delayed_call
-        delayed_call.start()
-
-    def clear(self) -> None:
-        self._event.clear()
-
-    def wait(self) -> None:
-        self._event.wait()
-
-
-class RelayControl:
-    def __init__(self) -> None:
-        self._controls = defaultdict(RelayControlObject)
-
-    def _signature(selt, request: "flask.Request"):
-        endpoint = request.path.split('/')[-1]
-        return endpoint
-
-    def process(self, request: "flask.Request"):
-        sig = self._signature(request)
-        obj = self._controls[sig]
-        print("check", sig, obj._event.is_set())
-        obj.wait()
-        print("waitdone")
-
-    def _relay_set_active(self, sig, delay=None):
-        obj = self._controls[sig]
-        obj.set(delay=delay)
-        print("active", sig, delay)
-
-    def _relay_set_paused(self, sig):
-        obj = self._controls[sig]
-        obj.clear()
-        print("pause", sig)
-
-    def control(self, request: "flask.Request"):
-        request = flask.request
-        request_data = request.get_json()
-        command = request_data.get("command")
-        service = request_data.get("service")
-        if command == "pause":
-            self._relay_set_paused(service)
-        elif command == "unpause":
-            self._relay_set_active(service)
-        elif command == "delay":
-            delay_time = request_data.get("time")
-            self._relay_set_paused(service)
-            self._relay_set_active(service, delay=delay_time)
-        elif command == "trigger":
-            print("GOT TRIGGER", request_data)
-        return {"hello": "there"}
-
-
 class RelayServer:
     def __init__(
         self,
         base_url: str,
         inject: Optional[List[InjectedResponse]] = None,
+        control = None,
     ) -> None:
         # todo for the future:
         #  - consider switching from Flask to Quart
         #  - async app will allow for better failure injection/poor network perf
-        self.relay_control = RelayControl()
+        self.relay_control = control
         self.app = flask.Flask(__name__)
         self.app.logger.setLevel(logging.INFO)
         self.app.register_error_handler(DeliberateHTTPError, self.handle_http_exception)
@@ -579,12 +513,13 @@ class RelayServer:
             view_func=self.storage_file,
             methods=["PUT", "GET"],
         )
-        self.app.add_url_rule(
-            rule="/_control",
-            endpoint="_control",
-            view_func=self.control,
-            methods=["POST"],
-        )
+        if control:
+            self.app.add_url_rule(
+                rule="/_control",
+                endpoint="_control",
+                view_func=self.control,
+                methods=["POST"],
+            )
         # @app.route("/artifacts/<entity>/<digest>", methods=["GET", "POST"])
         self.port = self._get_free_port()
         self.base_url = urllib.parse.urlparse(base_url)
@@ -768,4 +703,5 @@ class RelayServer:
         return relayed_response.json()
 
     def control(self) -> Mapping[str, str]:
+        assert self.relay_control
         return self.relay_control.control(flask.request)

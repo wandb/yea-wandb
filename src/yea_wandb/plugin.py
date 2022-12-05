@@ -238,6 +238,9 @@ class YeaWandbPlugin:
     def monitors_start(self):
         self._backend.start()
 
+    def monitors_start_test(self, t):
+        self._backend.start_test(t)
+
     def monitors_configure(self, config: Optional[Dict[str, Any]]):
         if config is None:
             return
