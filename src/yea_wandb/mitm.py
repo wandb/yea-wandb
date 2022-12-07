@@ -73,6 +73,7 @@ class RelayControl:
                 if trig_name != service:
                     continue
                 trig_item = trig[trig_name]
+                break
             # print("GOT", trig_item)
             if trig_item:
                 command = trig_item.get("command")
@@ -80,8 +81,21 @@ class RelayControl:
                 delay_time = trig_item.get("time")
                 if delay_time:
                     command = "delay"
-                self._control_command(command, service, delay_time)
-                # TODO: implement skip and count
+                seen_count = trig_item.get("_seen_count", 0)
+                trig_count = trig_item.get("_trig_count", 0)
+                skip = trig_item.get("skip", 0)
+                count = trig_item.get("count", 0)
+                # TODO restructure code for count and skip
+                ignore = False
+                if skip and seen_count < skip:
+                    ignore = True
+                if count and trig_count >= count:
+                    ignore = True
+                # print("trigger", ignore, skip, count, trig_item)
+                if not ignore:
+                    self._control_command(command, service, delay_time)
+                    trig_item["_trig_count"] = trig_count + 1
+                trig_item["_seen_count"] = seen_count + 1
         else:
             self._control_command(command, service, delay_time)
         return {"hello": "there"}
