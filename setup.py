@@ -11,6 +11,7 @@ setup(
     install_requires=[
         "Flask",
         "requests",
+        "pandas",
         "yea==0.8.6",
     ],
     package_dir={"": "src"},

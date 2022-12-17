@@ -125,6 +125,7 @@ class Backend:
             "mockserver-relay-remote-base-url"
         ]
 
+        # TODO: mitm will eventually be default replacing mockserver and live mode
         if self._args.mitm:
             self._start_mitm()
             return
