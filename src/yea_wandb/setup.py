@@ -13,7 +13,6 @@ from yea import trigger as ytrigger
 
 from . import hook
 
-
 INIT_TAG = ":wandb:init"
 LOG_TAG = ":wandb:log"
 FINISH_TAG = ":wandb:finish"

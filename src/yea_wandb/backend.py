@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import logging
+import netrc
 import os
 import random
 import socket
@@ -7,17 +9,14 @@ import string
 import subprocess
 import sys
 import time
-from typing import Any, Dict, Optional
-import logging
-
-import netrc
 import urllib
-import requests
-
-from .relay import RelayServer
-from .mitm import RelayControl
+from typing import Any, Dict, Optional
 
 import flask.cli
+import requests
+
+from .mitm import RelayControl
+from .relay import RelayServer
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
 
@@ -74,14 +73,16 @@ class Backend:
         log = logging.getLogger("werkzeug")
         log.setLevel(logging.ERROR)
         _relay_control = RelayControl()
-        _relay_server = RelayServer(base_url=base_url, inject=inject, control=_relay_control)
+        _relay_server = RelayServer(
+            base_url=base_url, inject=inject, control=_relay_control
+        )
         _relay_server.start()
         return _relay_server
 
     def _start_mitm(self):
         base_url = os.environ.get("WANDB_BASE_URL", "https://api.wandb.ai")
         api_key = os.environ.get("WANDB_API_KEY")
-        
+
         if not api_key:
             netloc = urllib.parse.urlparse(base_url).netloc
             net = netrc.netrc()

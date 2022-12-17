@@ -30,8 +30,8 @@ class RelayControl:
         self._controls = defaultdict(RelayControlObject)
         self._triggers = []
 
-    def _signature(selt, request: "flask.Request"):
-        endpoint = request.path.split('/')[-1]
+    def _signature(self, request: "flask.Request"):
+        endpoint = request.path.split("/")[-1]
         return endpoint
 
     def process(self, request: "flask.Request"):

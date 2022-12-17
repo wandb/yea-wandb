@@ -454,7 +454,7 @@ class RelayServer:
         self,
         base_url: str,
         inject: Optional[List[InjectedResponse]] = None,
-        control = None,
+        control=None,
     ) -> None:
         # todo for the future:
         #  - consider switching from Flask to Quart

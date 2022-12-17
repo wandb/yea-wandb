@@ -11,6 +11,7 @@ setup(
     install_requires=[
         "Flask",
         "requests",
+        "responses",
         "pandas",
         "yea==0.8.6",
     ],
