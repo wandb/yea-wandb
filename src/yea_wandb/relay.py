@@ -1,3 +1,5 @@
+# type: ignore
+
 import dataclasses
 import json
 import logging
