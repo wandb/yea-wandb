@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import logging
+import netrc
 import os
 import random
 import socket
@@ -7,9 +9,15 @@ import string
 import subprocess
 import sys
 import time
-from typing import Any, Dict
+import urllib
+from typing import Any, Dict, Optional
+
+import flask.cli
 
 import requests
+
+from .mitm import RelayControl
+from .relay import RelayServer
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
 
@@ -40,11 +48,14 @@ def parse_plugin_args(defaults: Dict, cli_args: Any) -> Dict:
 
 
 class Backend:
+    _mitm_server: Optional[RelayServer]
+
     def __init__(self, yc, args):
         self._yc = yc
         self._args = args
         self._server = None
         self._params = parse_plugin_args(PLUGIN_DEFAULTS, self._yc._args)
+        self._mitm_server = None
 
     def _get_ip(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -57,15 +68,70 @@ class Backend:
         _, port = sock.getsockname()
         return port
 
+    def _start_mitm_relay(self, base_url):
+        flask.cli.show_server_banner = lambda *args: None
+        inject = []
+        log = logging.getLogger("werkzeug")
+        log.setLevel(logging.ERROR)
+        _relay_control = RelayControl()
+        _relay_server = RelayServer(
+            base_url=base_url, inject=inject, control=_relay_control
+        )
+        _relay_server.start()
+        return _relay_server
+
+    def _start_mitm(self):
+        base_url = os.environ.get("WANDB_BASE_URL", "https://api.wandb.ai")
+        api_key = os.environ.get("WANDB_API_KEY")
+
+        if not api_key:
+            netloc = urllib.parse.urlparse(base_url).netloc
+            net = netrc.netrc()
+            got = net.authenticators(netloc)
+            user, account, passwd = got
+            api_key = passwd
+
+        self._mitm_server = self._start_mitm_relay(base_url)
+        url = self._mitm_server.relay_url
+
+        os.environ["WANDB_BASE_URL"] = url
+        os.environ["WANDB_API_KEY"] = api_key
+        # TODO: disable until the mitm server implements console stuff correctly
+        os.environ["WANDB_CONSOLE"] = "off"
+        os.environ["YEA_WANDB_MITM"] = url
+
+    def _start_test_triggers(self, t):
+        test_cfg = t._test_cfg
+
+        trig_list = test_cfg.get("trigger", [])
+        if not self._mitm_server:
+            return
+
+        mitm_control = self._mitm_server.relay_control
+        if not mitm_control:
+            return
+
+        mitm_control.set_triggers(trig_list)
+
+    def start_test(self, t):
+        self._start_test_triggers(t)
+
     def start(self):
         if self._args.dryrun:
             return
+
         mockserver_bind = self._params["mockserver-bind"]
         mockserver_host = self._params["mockserver-host"]
         mockserver_relay = self._params["mockserver-relay"]
         mockserver_relay_remote_base_url = self._params[
             "mockserver-relay-remote-base-url"
         ]
+
+        # TODO: mitm will eventually be default replacing mockserver and live mode
+        if self._args.mitm:
+            self._start_mitm()
+            return
+
         # TODO: consolidate with github.com/wandb/client:tests/conftest.py
 
         # if we are using live mode. force mock_server plugin defaults

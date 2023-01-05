@@ -2,12 +2,7 @@ import importlib
 import sys
 import time
 from types import ModuleType
-from typing import (
-    Callable,
-    Dict,
-    Optional,
-    Tuple,
-)
+from typing import Callable, Dict, Optional, Tuple
 
 
 class ImportMetaHook:

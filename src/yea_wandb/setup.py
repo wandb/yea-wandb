@@ -9,8 +9,13 @@ from collections import defaultdict
 from typing import Dict, Optional
 
 import yea._setup as ysetup
+from yea import trigger as ytrigger
 
 from . import hook
+
+INIT_TAG = ":wandb:init"
+LOG_TAG = ":wandb:log"
+FINISH_TAG = ":wandb:finish"
 
 
 class ProfileItem:
@@ -108,18 +113,42 @@ def time_this(func, prof: Profile, tag: str):
 
 def setup_profile_wandb(prof: Profile):
     wandb = importlib.import_module("wandb")
-    init_tag = ":wandb:init"
-    log_tag = ":wandb:log"
-    finish_tag = ":wandb:finish"
-    if init_tag in prof._items:
-        wandb.init = time_this(wandb.init, prof=prof, tag=init_tag)
-    if log_tag in prof._items:
+    if INIT_TAG in prof._items:
+        wandb.init = time_this(wandb.init, prof=prof, tag=INIT_TAG)
+    if LOG_TAG in prof._items:
         wandb.sdk.wandb_run.Run.log = time_this(
-            wandb.sdk.wandb_run.Run.log, prof=prof, tag=log_tag
+            wandb.sdk.wandb_run.Run.log, prof=prof, tag=LOG_TAG
         )
-    if finish_tag in prof._items:
+    if FINISH_TAG in prof._items:
         wandb.sdk.wandb_run.Run.finish = time_this(
-            wandb.sdk.wandb_run.Run.finish, prof=prof, tag=finish_tag
+            wandb.sdk.wandb_run.Run.finish, prof=prof, tag=FINISH_TAG
+        )
+
+
+def trig_this(func, tag: str):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        ytrigger(tag)
+        result = func(*args, **kwargs)
+        return result
+
+    return wrapper
+
+
+def setup_triggers():
+    trig_data = ysetup._setup_trigger()
+    if not trig_data:
+        return
+    wandb = importlib.import_module("wandb")
+    if INIT_TAG in trig_data:
+        wandb.init = trig_this(wandb.init, tag=INIT_TAG)
+    if LOG_TAG in trig_data:
+        wandb.sdk.wandb_run.Run.log = trig_this(
+            wandb.sdk.wandb_run.Run.log, tag=LOG_TAG
+        )
+    if FINISH_TAG in trig_data:
+        wandb.sdk.wandb_run.Run.finish = trig_this(
+            wandb.sdk.wandb_run.Run.finish, tag=FINISH_TAG
         )
 
 
@@ -154,3 +183,4 @@ def setup_profile():
 def setup():
     setup_plugin()
     setup_profile()
+    setup_triggers()
