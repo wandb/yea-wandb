@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name="yea-wandb",
-    version="0.9.0",
+    version="0.9.1-dev",
     description="Test harness wandb plugin",
     packages=["yea_wandb"],
     install_requires=[
