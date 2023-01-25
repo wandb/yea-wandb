@@ -16,8 +16,6 @@ import flask.cli
 
 import requests
 
-from wandb.testing.relay import RelayServer
-
 from .mitm import RelayControl
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
@@ -49,8 +47,6 @@ def parse_plugin_args(defaults: Dict, cli_args: Any) -> Dict:
 
 
 class Backend:
-    _mitm_server: Optional[RelayServer]
-
     def __init__(self, yc, args):
         self._yc = yc
         self._args = args
@@ -70,6 +66,8 @@ class Backend:
         return port
 
     def _start_mitm_relay(self, base_url):
+        from wandb.testing.relay import RelayServer
+
         flask.cli.show_server_banner = lambda *args: None
         inject = []
         log = logging.getLogger("werkzeug")
