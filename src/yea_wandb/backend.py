@@ -16,8 +16,8 @@ import flask.cli
 
 import requests
 
+from wandb.testing.relay import RelayServer
 from .mitm import RelayControl
-from .relay import RelayServer
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
 
