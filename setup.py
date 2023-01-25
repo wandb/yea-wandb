@@ -14,7 +14,8 @@ setup(
         "responses",
         "pandas",
         "yea==0.9.0",
-        "wandb>=0.13.10.dev1",
+        # "wandb>=0.13.10.dev1",
+        "wandb @ git+https://github.com/wandb/wandb.git@jhr-relay-split",
     ],
     package_dir={"": "src"},
     entry_points={
