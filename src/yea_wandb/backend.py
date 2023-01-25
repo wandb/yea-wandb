@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 import urllib
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import flask.cli
 
