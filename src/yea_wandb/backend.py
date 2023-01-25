@@ -13,7 +13,9 @@ import urllib
 from typing import Any, Dict, Optional
 
 import flask.cli
+
 import requests
+
 from wandb.testing.relay import RelayServer
 
 from .mitm import RelayControl
