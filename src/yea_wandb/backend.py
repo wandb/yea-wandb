@@ -13,10 +13,9 @@ import urllib
 from typing import Any, Dict, Optional
 
 import flask.cli
-
 import requests
-
 from wandb.testing.relay import RelayServer
+
 from .mitm import RelayControl
 
 DUMMY_API_KEY = "1824812581259009ca9981580f8f8a9012409eee"
