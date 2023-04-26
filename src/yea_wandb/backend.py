@@ -191,7 +191,9 @@ class Backend:
             return requests.get(server.base_url + "/ctx", headers=headers).json()
 
         def set_ctx(payload):
-            return requests.put(server.base_url + "/ctx", json=payload, headers=headers).json()
+            return requests.put(
+                server.base_url + "/ctx", json=payload, headers=headers
+            ).json()
 
         def reset_ctx():
             return requests.delete(server.base_url + "/ctx", headers=headers).json()
