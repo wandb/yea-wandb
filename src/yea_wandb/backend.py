@@ -185,14 +185,16 @@ class Backend:
             close_fds=True,
         )
 
+        headers = {"Content-type": "application/json", "Accept": "application/json"}
+
         def get_ctx():
-            return requests.get(server.base_url + "/ctx").json()
+            return requests.get(server.base_url + "/ctx", headers=headers).json()
 
         def set_ctx(payload):
-            return requests.put(server.base_url + "/ctx", json=payload).json()
+            return requests.put(server.base_url + "/ctx", json=payload, headers=headers).json()
 
         def reset_ctx():
-            return requests.delete(server.base_url + "/ctx").json()
+            return requests.delete(server.base_url + "/ctx", headers=headers).json()
 
         server.get_ctx = get_ctx
         server.set_ctx = set_ctx
@@ -204,7 +206,7 @@ class Backend:
         started = False
         for _ in range(30):
             try:
-                res = requests.get(f"{server.base_url}/ctx", timeout=5)
+                res = requests.get(f"{server.base_url}/ctx", timeout=5, headers=headers)
                 if res.status_code == 200:
                     started = True
                     break
