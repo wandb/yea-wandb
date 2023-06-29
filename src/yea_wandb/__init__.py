@@ -1,4 +1,4 @@
 from .setup import setup
 
 __all__ = ["setup"]
-__version__ = "0.9.12"
+__version__ = "0.9.13-dev"
