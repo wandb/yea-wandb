@@ -66,7 +66,7 @@ class RelayControl:
         self._controls[sig] = RelayControlObject()
 
     def _control_command(self, command, service, delay_time=None):
-        print("control", command, service, delay_time)
+        # print("control", command, service, delay_time)
         if command == "pause":
             self._relay_set_paused(service)
         elif command == "unpause":
@@ -90,7 +90,6 @@ class RelayControl:
     def _do_trigger(self, trig_item, trig_type):
         if not trig_item:
             return
-        print("GOT", trig_item, trig_type)
         command = trig_item.get("command")
         service = trig_item.get("service")
         delay_time = trig_item.get("time")
@@ -99,7 +98,7 @@ class RelayControl:
             command = "delay"
         seen_count = trig_item.get("_seen_count", 0)
         trig_count = trig_item.get("_trig_count", 0)
-        print("seen count", seen_count)
+        # print("seen count", seen_count)
         skip = trig_item.get("skip", 0)
         count = trig_item.get("count", 0)
         # TODO restructure code for count and skip
@@ -115,13 +114,11 @@ class RelayControl:
                 trig_item["_trig_count"] = trig_count + 1
             trig_item["_seen_count"] = seen_count + 1
 
-        print("trig_type", trig_type, one_shot, trig_count)
+        # print("trig_type", trig_type, one_shot, trig_count)
         if trig_type == "post":
-            print("1")
             if one_shot and trig_count:
-                print("12")
                 self._control_command("reset", service, delay_time)
-                print("123")
+                trig_item["one_shot"] = 0
 
     def control(self, request: "flask.Request"):
         request = flask.request
