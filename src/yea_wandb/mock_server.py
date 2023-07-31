@@ -615,6 +615,12 @@ def create_app(user_ctx=None):
         body = request.get_json()
         app.logger.info("graphql post body: %s", body)
 
+        # fixup body query to be more compatible with other graphql implementations
+        # lets start by changing any mutation or query that has a space after the
+        # graphql request name
+        if re.match(r"^\s*(mutation|query)\s(\w+)\s\(", body["query"]):
+            body["query"] = body["query"].replace(" (", "(")
+
         if body["variables"].get("run"):
             ctx["current_run"] = body["variables"]["run"]
 
