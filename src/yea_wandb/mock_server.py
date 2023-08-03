@@ -850,7 +850,7 @@ def create_app(user_ctx=None):
                 "name": "foo",
                 "uploadUrl": "",
                 "storagePath": "x/y/z",
-                "uploadheaders": [],
+                "uploadHeaders": [],
                 "artifact": {"id": "1"},
             }
             if "storagePath" not in body["query"]:
@@ -1151,7 +1151,7 @@ def create_app(user_ctx=None):
                             "displayName": file_spec["name"],
                             "digest": "null",
                             "uploadUrl": url,
-                            "uploadHeaders": "",
+                            "uploadHeaders": [],
                         }
                     }
                 )
@@ -1215,18 +1215,18 @@ def create_app(user_ctx=None):
             }
         if "mutation CreateArtifactManifest(" in body["query"]:
             manifest = {
-                "id": 1,
+                "id": "1",
                 "type": "INCREMENTAL"
                 if "incremental" in body.get("variables", {}).get("name", "")
                 else "FULL",
                 "file": {
-                    "id": 1,
+                    "id": "1",
                     "directUrl": base_url
                     + "/storage?file=wandb_manifest.json&name={}".format(
                         body.get("variables", {}).get("name", "")
                     ),
                     "uploadUrl": base_url + "/storage?file=wandb_manifest.json",
-                    "uploadHeaders": "",
+                    "uploadHeaders": [],
                 },
             }
             run_name = body.get("variables", {}).get("runName", "unknown")
@@ -1253,7 +1253,7 @@ def create_app(user_ctx=None):
                         body.get("variables", {}).get("name", "")
                     ),
                     "uploadUrl": base_url + "/storage?file=wandb_manifest.json",
-                    "uploadHeaders": "",
+                    "uploadHeaders": [],
                 },
             }
             return {
@@ -1292,7 +1292,7 @@ def create_app(user_ctx=None):
                                 "id": idx,
                                 "name": file["name"],
                                 "uploadUrl": "",
-                                "uploadheaders": [],
+                                "uploadHeaders": [],
                                 "artifact": {"id": file["artifactID"]},
                             }
                             for idx, file in enumerate(
@@ -1306,7 +1306,7 @@ def create_app(user_ctx=None):
             return {
                 "data": {
                     "commitArtifact": {
-                        "artifact": {"id": 1, "digest": "0000===================="}
+                        "artifact": {"id": "1", "digest": "0000===================="}
                     }
                 }
             }
