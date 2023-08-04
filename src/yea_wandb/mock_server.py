@@ -624,6 +624,24 @@ def create_app(user_ctx=None):
         if body["variables"].get("run"):
             ctx["current_run"] = body["variables"]["run"]
 
+        if "mutation CreateRunFiles" in body["query"]:
+            requested_file = body["variables"]["files"][0]
+            upload_url = base_url + "/storage?file=%s" % requested_file
+            data = {"data": {
+                "createRunFiles": {
+                    "runID":"UnVuOnYxOmtoMXFsdmIwOnVuY2F0ZWdvcml6ZWQ6amVmZnI=",
+                    "uploadHeaders":[],
+                    "files": [{
+                        "name": requested_file,
+                        "uploadUrl": upload_url,
+                        }]
+                    }
+                 }
+                 }
+            r = json.dumps(
+                data
+            )
+            return r
         if body["variables"].get("files"):
             requested_file = body["variables"]["files"][0]
             ctx["requested_file"] = requested_file
