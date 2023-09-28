@@ -1586,12 +1586,14 @@ def create_app(user_ctx=None):
             artifacts["totalCount"] = ctx["page_times"]
             return {"data": {"project": {"run": {"outputArtifacts": artifacts}}}}
         if "query Artifacts(" in body["query"]:
+            print("inside query Artifacts")
             version = "v%i" % ctx["page_count"]
             artifacts = paginated(
                 artifact2(
                     ctx,
                     entity=body["variables"]["entity"],
                     project=body["variables"]["project"],
+                    _type=body["variables"]["artifactTypeName"]
                 ),
                 ctx,
                 {"version": version},
@@ -1667,6 +1669,8 @@ def create_app(user_ctx=None):
             _type = "dataset"
             if "job" in body["variables"]["name"]:
                 _type = "job"
+            if "model" in body["variables"]["name"]:
+            _type = "model"
             if body["variables"]["name"] == "dummy:v0":
                 _id = "DUMMY_V0"
             art = artifact2(
